@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+set -eo pipefail
+
+env_dir="$1/env"
+
+if [[ -f "$env_dir/GIT_SSH_KEY" ]]; then
+  exit 0
+fi
+
+exit 1

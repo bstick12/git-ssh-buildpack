@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+echo "---> Git SSH key buildpack"
+
+set -eo pipefail
+
+env_dir="$2/env"
+
+if [[ -f "$env_dir/GIT_SSH_KEY" ]]; then
+  echo "Found GIT_SSH_KEY adding to ssh-agent"
+  eval $(ssh-agent -s) >/dev/null 2>&1
+  git config --global url."git@github.com:".insteadOf "https://github.com/"
+  GIT_SSH_KEY=`cat $env_dir/GIT_SSH_KEY`
+  echo -e "$GIT_SSH_KEY\n" | ssh-add -
+  export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=accept-new"
+  ssh git@github.com || true >/dev/null 2>&1
+fi
