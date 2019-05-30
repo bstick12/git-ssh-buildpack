@@ -13,8 +13,9 @@ if [[ -f "$env_dir/GIT_SSH_KEY" ]]; then
   GIT_SSH_KEY=`cat $env_dir/GIT_SSH_KEY`
   echo -e "$GIT_SSH_KEY\n" | ssh-add -
   ssh -o StrictHostKeyChecking=accept-new git@github.com || true
-  build_env_dir="$1/env.build"
+  build_env_dir="$1/ssh-agent/env.build"
   mkdir -p $build_env_dir
-  echo "$SSH_AUTH_SOCK" > "$build_env_dir/SSH_AUTH_SOCK"
-  echo "$SSH_AGENT_PID" > "$build_env_dir/SSH_AGENT_PID"
+  echo -n "$SSH_AUTH_SOCK" > "$build_env_dir/SSH_AUTH_SOCK"
+  echo -n "$SSH_AGENT_PID" > "$build_env_dir/SSH_AGENT_PID"
+  echo "build = true" > "$1/ssh-agent.toml"
 fi
