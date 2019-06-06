@@ -15,7 +15,7 @@ import (
 
 const (
 	Dependency =  "sshagent"
-	SshAgentSockAddress = "/tmp/git-key-buildpack.sock"
+	SshAgentSockAddress = "/tmp/git-ssh-buildpack.sock"
 )
 
 type Runner interface {

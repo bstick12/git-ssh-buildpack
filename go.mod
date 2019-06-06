@@ -1,4 +1,4 @@
-module github.com/bstick12/git-key-buildpack
+module github.com/bstick12/git-ssh-buildpack
 
 go 1.12
 

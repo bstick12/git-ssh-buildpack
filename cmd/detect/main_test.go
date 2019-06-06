@@ -1,14 +1,14 @@
 package main_test
 
 import (
-	"github.com/bstick12/git-key-buildpack/sshagent"
+	"github.com/bstick12/git-ssh-buildpack/sshagent"
 	"os"
 	"testing"
 
 	"github.com/buildpack/libbuildpack/buildplan"
 
-	cmd_detect "github.com/bstick12/git-key-buildpack/cmd/detect"
-	"github.com/bstick12/git-key-buildpack/utils"
+	cmd_detect "github.com/bstick12/git-ssh-buildpack/cmd/detect"
+	"github.com/bstick12/git-ssh-buildpack/utils"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
 	"github.com/cloudfoundry/libcfbuildpack/test"
 	. "github.com/onsi/gomega"
@@ -30,7 +30,7 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 	})
 
 	when("the os environment variable is present", func() {
-		it("should add git-key-buildpack to the buildplan", func() {
+		it("should add git-ssh-buildpack to the buildplan", func() {
 			defer utils.ResetEnv(os.Environ())
 			os.Clearenv()
 			os.Setenv("GIT_SSH_KEY", "VALUE")
@@ -49,7 +49,7 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 	})
 
 	when("the os environment variable is not present", func() {
-		it("should not add git-key-buildpack to the buildplan", func() {
+		it("should not add git-ssh-buildpack to the buildplan", func() {
 			defer utils.ResetEnv(os.Environ())
 			os.Clearenv()
 			code, err := cmd_detect.RunDetect(factory.Detect)

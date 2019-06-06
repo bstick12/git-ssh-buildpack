@@ -2,8 +2,8 @@ package sshagent_test
 
 import (
 	"fmt"
-	"github.com/bstick12/git-key-buildpack/sshagent"
-	"github.com/bstick12/git-key-buildpack/utils"
+	"github.com/bstick12/git-ssh-buildpack/sshagent"
+	"github.com/bstick12/git-ssh-buildpack/utils"
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/libcfbuildpack/test"
 	. "github.com/onsi/gomega"

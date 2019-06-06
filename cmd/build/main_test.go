@@ -2,15 +2,15 @@ package main_test
 
 import (
 	"errors"
-	"github.com/bstick12/git-key-buildpack/sshagent"
-	"github.com/bstick12/git-key-buildpack/utils"
+	"github.com/bstick12/git-ssh-buildpack/sshagent"
+	"github.com/bstick12/git-ssh-buildpack/utils"
 	"io"
 	"os"
 	"testing"
 
 	"github.com/buildpack/libbuildpack/buildplan"
 
-	cmdBuild "github.com/bstick12/git-key-buildpack/cmd/build"
+	cmdBuild "github.com/bstick12/git-ssh-buildpack/cmd/build"
 	"github.com/cloudfoundry/libcfbuildpack/build"
 	"github.com/cloudfoundry/libcfbuildpack/test"
 	. "github.com/onsi/gomega"

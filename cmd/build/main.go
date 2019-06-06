@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/bstick12/git-key-buildpack/sshagent"
+	"github.com/bstick12/git-ssh-buildpack/sshagent"
 	"os"
 
 	"github.com/buildpack/libbuildpack/buildplan"

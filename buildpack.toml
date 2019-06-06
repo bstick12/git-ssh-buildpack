@@ -1,7 +1,7 @@
 [buildpack]
 id = "io.bstick12.buildpacks.git-ssh"
 version = "0.1.0"
-name = "GIT SSH Authorization buildpack"
+name = "GIT SSH buildpack"
 
 [metadata]
 include_files = ["bin/build", "bin/detect", "buildpack.toml", "go.mod", "go.sum"]
