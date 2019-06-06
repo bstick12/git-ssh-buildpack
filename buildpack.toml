@@ -1,11 +1,11 @@
 [buildpack]
 id = "io.bstick12.buildpacks.git-ssh"
-version = "0.0.1"
+version = "0.1.0"
 name = "GIT SSH Authorization buildpack"
 
-
 [metadata]
-include_files = ["bin/build","bin/detect","buildpack.toml"]
+include_files = ["bin/build", "bin/detect", "buildpack.toml", "go.mod", "go.sum"]
+pre_package = "./scripts/build.sh"
 
 [[stacks]]
 id = "org.cloudfoundry.stacks.cflinuxfs3"
