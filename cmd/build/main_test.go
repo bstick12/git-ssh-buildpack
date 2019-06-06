@@ -3,7 +3,9 @@ package main_test
 import (
 	"errors"
 	"github.com/bstick12/git-key-buildpack/sshagent"
+	"github.com/bstick12/git-key-buildpack/utils"
 	"io"
+	"os"
 	"testing"
 
 	"github.com/buildpack/libbuildpack/buildplan"
@@ -39,6 +41,11 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 
 	when("building source", func() {
 		it("should pass if successful", func() {
+
+			defer utils.ResetEnv(os.Environ())
+			os.Clearenv()
+			os.Setenv("GIT_SSH_KEY", "VALUE")
+
 			sshagent.CmdFunction = func (_, _ io.Writer, _ io.Reader, _ string, _ ...string) sshagent.Runner {
 				return &TestRunner {
 					Runner: func() error {
@@ -64,6 +71,11 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 		})
 
 		it("should fail if it doesn't contribute", func() {
+
+			defer utils.ResetEnv(os.Environ())
+			os.Clearenv()
+			os.Setenv("GIT_SSH_KEY", "VALUE")
+
 			sshagent.CmdFunction = func (_, _ io.Writer, _ io.Reader, _ string, _ ...string) sshagent.Runner {
 				return &TestRunner {
 					Runner: func() error {
