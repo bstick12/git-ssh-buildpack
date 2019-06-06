@@ -59,7 +59,7 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 			Expect(code).To(Equal(build.SuccessStatusCode))
 
 			sshagentLayer := factory.Build.Layers.Layer(sshagent.Dependency)
-			Expect(sshagentLayer).To(test.HaveLayerMetadata(true, true, false))
+			Expect(sshagentLayer).To(test.HaveLayerMetadata(true, false, false))
 
 		})
 

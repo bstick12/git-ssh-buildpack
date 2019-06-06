@@ -85,7 +85,11 @@ func Contribute(context build.Build) error {
 }
 
 func flags(plan buildplan.Dependency) []layers.Flag {
-	flags := []layers.Flag{layers.Cache}
+	flags := []layers.Flag{}
+	cache, _ := plan.Metadata["cache"].(bool)
+	if cache {
+		flags = append(flags, layers.Cache)
+	}
 	build, _ := plan.Metadata["build"].(bool)
 	if build {
 		flags = append(flags, layers.Build)
