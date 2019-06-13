@@ -1,5 +1,10 @@
 # GIT SSH key buildpack for Github
 
+[![CircleCI](https://circleci.com/gh/bstick12/git-ssh-buildpack.svg?style=svg)](https://circleci.com/gh/bstick12/git-ssh-buildpack)
+[![Download](https://api.bintray.com/packages/bstick12/buildpacks/git-ssh-buildpack/images/download.svg?version=0.1.0) ](https://bintray.com/bstick12/buildpacks/git-ssh-buildpack/0.1.0/link)
+[![codecov](https://codecov.io/gh/bstick12/git-ssh-buildpack/branch/master/graph/badge.svg)](https://codecov.io/gh/bstick12/git-ssh-buildpack)
+
+
 This is a [Cloud Native Buildpack V3](https://buildpacks.io/) that enables adding an SSH key to the build process and forces git to use SSH rather than HTTPS for communication with Github.
 
 This buildpack is designed to work in collaboration with other buildpacks.
