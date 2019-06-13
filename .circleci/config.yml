@@ -1,0 +1,24 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run:
+          name: run tests
+          command: |
+            ./scripts/unit.sh
+      - run:
+          name: post coverage
+          command: |
+            bash <(curl -s https://codecov.io/bash)
+      - run:
+          name: build
+          command: |
+            ./scripts/build.sh
+      - run:
+          name: package
+          command: |
+            ./scripts/package.sh
