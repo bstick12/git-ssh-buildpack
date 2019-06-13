@@ -20,7 +20,7 @@ export GIT_SSH_KEY=`cat /path/to/ssh_key`
 Add the buildpack e.g via the pack cli
 
 ```
-pack build <image-name> --builder cloudfoundry/cnb:cflinuxfs3 --buildpack /path/to/git-ssh-buildpack -e GIT_SSH_KEY ....
+pack build <image-name> --builder cloudfoundry/cnb:cflinuxfs3 --buildpack https://bintray.com/bstick12/buildpacks/download_file?file_path=git-ssh-buildpack.tgz -e GIT_SSH_KEY ....
 ```
 
 ## Development
