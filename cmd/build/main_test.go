@@ -57,7 +57,7 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 				},
 			}
 
-			mockRunner.EXPECT().Run( ioutil.Discard, os.Stderr, nil, "ssh-agent","-a", sshagent.SshAgentSockAddress)
+			mockRunner.EXPECT().Run( ioutil.Discard, os.Stderr, nil, "ssh-agent","-a", sshagent.SockAddress)
 			mockRunner.EXPECT().Run( os.Stdout, os.Stderr, strings.NewReader(sshKey + "\n"), "ssh-add","-")
 			mockRunner.EXPECT().Run( os.Stdout, os.Stderr, nil, "git","config", "--global", "url.git@github.com:.insteadOf", "https://github.com/")
 			mockRunner.EXPECT().Run( os.Stdout, os.Stderr, nil, "ssh","-o", "StrictHostKeyChecking=accept-new", "git@github.com")

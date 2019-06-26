@@ -2,6 +2,7 @@ package sshagent
 
 import (
 	"errors"
+	"fmt"
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/libcfbuildpack/build"
 	"github.com/cloudfoundry/libcfbuildpack/layers"
@@ -14,15 +15,13 @@ import (
 )
 
 const (
-	Dependency =  "sshagent"
-	SshAgentSockAddress = "/tmp/git-ssh-buildpack.sock"
+	Dependency  =  "sshagent"
+	SockAddress = "/tmp/git-ssh-buildpack.sock"
 )
 
 type Runner interface {
  	Run(stdout, stderr io.Writer, stdin io.Reader, command string, args ...string) error
 }
-
-
 
 func Contribute(context build.Build, runner Runner) error {
 
@@ -39,39 +38,44 @@ func Contribute(context build.Build, runner Runner) error {
 	}
 
 	layer.Logger.SubsequentLine("Starting SSH agent")
-	err := runner.Run(ioutil.Discard, os.Stderr, nil, "ssh-agent", "-a", SshAgentSockAddress)
+	err := runner.Run(ioutil.Discard, os.Stderr, nil, "ssh-agent", "-a", SockAddress)
 	if err != nil {
 		layer.Logger.Error("Failed to start ssh-agent [%v]", err)
 		return err
 	}
 
-	os.Setenv("SSH_AUTH_SOCK", SshAgentSockAddress)
+	os.Setenv("SSH_AUTH_SOCK", SockAddress)
 	err = runner.Run(os.Stdout, os.Stderr, strings.NewReader(sshkey +"\n"), "ssh-add", "-")
 	if err != nil {
 		layer.Logger.Error("Failed to add SSH Key [%v]", err)
 		return err
 	}
 
-	err = runner.Run(os.Stdout, os.Stderr,nil, "git", "config", "--global", "url.git@github.com:.insteadOf","https://github.com/")
-	if err != nil {
-		layer.Logger.Error("Failed to configure git for SSH [%v]", err)
-		return err
-	}
+	for _, host :=  range getGitSshHosts() {
+		layer.Logger.SubsequentLine("Configuring host [%s]", host)
+		err = runner.Run(os.Stdout, os.Stderr, nil, "git", "config", "--global",
+			fmt.Sprintf("url.git@%s:.insteadOf", host), fmt.Sprintf("https://%s/", host))
+		if err != nil {
+			layer.Logger.Error("Failed to configure git for SSH on host [%s] [%v]", host, err)
+			return err
+		}
 
-	err = runner.Run(os.Stdout, os.Stderr,nil, "ssh", "-o", "StrictHostKeyChecking=accept-new", "git@github.com")
-	if err != nil {
-		if exiterr, ok := err.(*exec.ExitError); ok {
-			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
-				if status.ExitStatus()> 1 {
-					layer.Logger.Error("Failed to authorize with github")
-					return err
+		err = runner.Run(os.Stdout, os.Stderr, nil, "ssh", "-o", "StrictHostKeyChecking=accept-new",
+			fmt.Sprintf("git@%s", host))
+		if err != nil {
+			if exitErr, ok := err.(*exec.ExitError); ok {
+				if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
+					if status.ExitStatus() > 1 {
+						layer.Logger.Error("Failed to authorize with [%s]", host)
+						return err
+					}
 				}
 			}
 		}
 	}
 
 	var sshAgentHelperLayerContributor = func(artifact string, layer layers.HelperLayer) error {
-		layer.AppendBuildEnv("SSH_AUTH_SOCK", "%s", SshAgentSockAddress)
+		layer.AppendBuildEnv("SSH_AUTH_SOCK", "%s", SockAddress)
 		return nil
 	}
 
@@ -81,6 +85,13 @@ func Contribute(context build.Build, runner Runner) error {
 	}
 
 	return nil
+}
+
+func getGitSshHosts() []string {
+	if value, ok := os.LookupEnv("GIT_SSH_HOSTS"); ok {
+		return strings.Split(value,",")
+	}
+	return []string{"github.com"}
 }
 
 func flags(plan buildplan.Dependency) []layers.Flag {

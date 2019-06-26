@@ -63,26 +63,50 @@ func testSshAgent(t *testing.T, when spec.G, it spec.S) {
 
 	when("GIT_SSH_KEY is available", func() {
 
-		var sshkey = "VALUE"
+		var (
+			sshkey = "VALUE"
+			sshHosts = "bitbucket.org,gitlab.com"
+		)
 
 		it("should execute required commands", func() {
 			defer utils.ResetEnv(os.Environ())
 			os.Clearenv()
 			os.Setenv("GIT_SSH_KEY", sshkey)
 
-			mockRunner.EXPECT().Run( ioutil.Discard, os.Stderr, nil, "ssh-agent","-a", sshagent.SshAgentSockAddress)
+			mockRunner.EXPECT().Run( ioutil.Discard, os.Stderr, nil, "ssh-agent","-a", sshagent.SockAddress)
 			mockRunner.EXPECT().Run( os.Stdout, os.Stderr, strings.NewReader(sshkey + "\n"), "ssh-add","-")
 			mockRunner.EXPECT().Run( os.Stdout, os.Stderr, nil, "git","config", "--global", "url.git@github.com:.insteadOf", "https://github.com/")
+
 			mockRunner.EXPECT().Run( os.Stdout, os.Stderr, nil, "ssh","-o", "StrictHostKeyChecking=accept-new", "git@github.com")
 			err := sshagent.Contribute(factory.Build, mockRunner)
 			Expect(err).To(BeNil())
 
 		})
 
+		when ("GIT_SSH_HOSTS is set", func() {
+			it("should execute the required commands", func() {
+				defer utils.ResetEnv(os.Environ())
+				os.Clearenv()
+				os.Setenv("GIT_SSH_KEY", sshkey)
+				os.Setenv("GIT_SSH_HOSTS", sshHosts)
+
+				mockRunner.EXPECT().Run( ioutil.Discard, os.Stderr, nil, "ssh-agent","-a", sshagent.SockAddress)
+				mockRunner.EXPECT().Run( os.Stdout, os.Stderr, strings.NewReader(sshkey + "\n"), "ssh-add","-")
+				mockRunner.EXPECT().Run( os.Stdout, os.Stderr, nil, "git","config", "--global", "url.git@bitbucket.org:.insteadOf", "https://bitbucket.org/")
+				mockRunner.EXPECT().Run( os.Stdout, os.Stderr, nil, "git","config", "--global", "url.git@gitlab.com:.insteadOf", "https://gitlab.com/")
+
+				mockRunner.EXPECT().Run( os.Stdout, os.Stderr, nil, "ssh","-o", "StrictHostKeyChecking=accept-new", "git@bitbucket.org")
+				mockRunner.EXPECT().Run( os.Stdout, os.Stderr, nil, "ssh","-o", "StrictHostKeyChecking=accept-new", "git@gitlab.com")
+
+				err := sshagent.Contribute(factory.Build, mockRunner)
+				Expect(err).To(BeNil())
+			})
+		})
+
 		when("commands fail", func() {
 			it("should fail ssh-agent", func() {
 				ret := errors.New("ssh-agent failed to start")
-				mockRunner.EXPECT().Run(ioutil.Discard, os.Stderr, nil, "ssh-agent", "-a", sshagent.SshAgentSockAddress).Return(ret)
+				mockRunner.EXPECT().Run(ioutil.Discard, os.Stderr, nil, "ssh-agent", "-a", sshagent.SockAddress).Return(ret)
 
 				defer utils.ResetEnv(os.Environ())
 				os.Clearenv()
@@ -94,7 +118,7 @@ func testSshAgent(t *testing.T, when spec.G, it spec.S) {
 
 			it("should fail ssh-add", func() {
 				ret := errors.New("ssh-add failed to start")
-				mockRunner.EXPECT().Run( ioutil.Discard, os.Stderr, nil, "ssh-agent","-a", sshagent.SshAgentSockAddress)
+				mockRunner.EXPECT().Run( ioutil.Discard, os.Stderr, nil, "ssh-agent","-a", sshagent.SockAddress)
 				mockRunner.EXPECT().Run( os.Stdout, os.Stderr, strings.NewReader(sshkey + "\n"), "ssh-add","-").Return(ret)
 
 				defer utils.ResetEnv(os.Environ())
@@ -107,7 +131,7 @@ func testSshAgent(t *testing.T, when spec.G, it spec.S) {
 
 			it("should fail git", func() {
 				ret := errors.New("git failed to start")
-				mockRunner.EXPECT().Run( ioutil.Discard, os.Stderr, nil, "ssh-agent","-a", sshagent.SshAgentSockAddress)
+				mockRunner.EXPECT().Run( ioutil.Discard, os.Stderr, nil, "ssh-agent","-a", sshagent.SockAddress)
 				mockRunner.EXPECT().Run( os.Stdout, os.Stderr, strings.NewReader(sshkey + "\n"), "ssh-add","-")
 				mockRunner.EXPECT().Run( os.Stdout, os.Stderr, nil, "git","config", "--global", "url.git@github.com:.insteadOf", "https://github.com/").Return(ret)
 
@@ -123,7 +147,7 @@ func testSshAgent(t *testing.T, when spec.G, it spec.S) {
 				// Need a failure with an exit code over 1
 				ret := exec.Command("ssh", "unknown.example.com").Run()
 
-				mockRunner.EXPECT().Run( ioutil.Discard, os.Stderr, nil, "ssh-agent","-a", sshagent.SshAgentSockAddress)
+				mockRunner.EXPECT().Run( ioutil.Discard, os.Stderr, nil, "ssh-agent","-a", sshagent.SockAddress)
 				mockRunner.EXPECT().Run( os.Stdout, os.Stderr, strings.NewReader(sshkey + "\n"), "ssh-add","-")
 				mockRunner.EXPECT().Run( os.Stdout, os.Stderr, nil, "git","config", "--global", "url.git@github.com:.insteadOf", "https://github.com/")
 				mockRunner.EXPECT().Run( os.Stdout, os.Stderr, nil, "ssh","-o", "StrictHostKeyChecking=accept-new", "git@github.com").Return(ret)
