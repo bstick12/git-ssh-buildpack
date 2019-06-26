@@ -1,16 +1,15 @@
 package sshagent_test
 
 import (
-	"fmt"
+	"errors"
 	"github.com/bstick12/git-ssh-buildpack/sshagent"
 	"github.com/bstick12/git-ssh-buildpack/utils"
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/libcfbuildpack/test"
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/gomega"
-	"github.com/pkg/errors"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
-	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -18,38 +17,28 @@ import (
 	"testing"
 )
 
+//go:generate mockgen -source=sshagent.go -destination=sshagent_mocks.go -package=sshagent
+
 func TestUnitDetect(t *testing.T) {
 
-	spec.Run(t, "Contributed", testContribute, spec.Report(report.Terminal{}))
+	spec.Run(t, "Contributed", testSshAgent, spec.Report(report.Terminal{}))
 
 }
 
-type CmdFunctionParams struct {
-	Stdout io.Writer
-	StdErr io.Writer
-	Stdin io.Reader
-	Command string
-	Args []string
-	Return error
-}
+func testSshAgent(t *testing.T, when spec.G, it spec.S) {
 
-type TestRunner struct {
-	Runner func () error
-}
-
-func(tr *TestRunner) Run() error {
-	return tr.Runner()
-}
-
-var cmdFunctions map[string]CmdFunctionParams
-
-func testContribute(t *testing.T, when spec.G, it spec.S) {
-
-	var factory *test.BuildFactory
+	var (
+		factory *test.BuildFactory
+		mockRunner  *sshagent.MockRunner
+		mockCtrl    *gomock.Controller
+	)
 
 	it.Before(func() {
 		RegisterTestingT(t)
 		factory = test.NewBuildFactory(t)
+
+		mockCtrl = gomock.NewController(t)
+		mockRunner = sshagent.NewMockRunner(mockCtrl)
 
 		factory.Build.BuildPlan = buildplan.BuildPlan{
 			sshagent.Dependency: buildplan.Dependency{
@@ -65,7 +54,7 @@ func testContribute(t *testing.T, when spec.G, it spec.S) {
 
 			defer utils.ResetEnv(os.Environ())
 			os.Clearenv()
-			err := sshagent.Contribute(factory.Build)
+			err := sshagent.Contribute(factory.Build, mockRunner)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).Should(ContainSubstring("no GIT_SSH_KEY environment variable found"))
 
@@ -74,45 +63,18 @@ func testContribute(t *testing.T, when spec.G, it spec.S) {
 
 	when("GIT_SSH_KEY is available", func() {
 
-		var sshkey = "value"
-
-		it.Before(func() {
-			cmdFunctions = make(map[string]CmdFunctionParams)
-			cmdFunctions["ssh-agent"] = CmdFunctionParams{
-				Stdout: ioutil.Discard,
-				StdErr: os.Stderr,
-				Stdin: nil,
-				Args: []string{"-a", sshagent.SshAgentSockAddress},
-				Return: nil,
-			}
-			cmdFunctions["ssh-add"] = CmdFunctionParams{
-				Stdout: os.Stdout,
-				StdErr: os.Stderr,
-				Stdin: strings.NewReader(sshkey + "\n"),
-				Args: []string{"-"},
-				Return: nil,
-			}
-			cmdFunctions["git"] = CmdFunctionParams{
-				Stdout: os.Stdout,
-				StdErr: os.Stderr,
-				Stdin: nil,
-				Args: []string{"config", "--global", "url.git@github.com:.insteadOf", "https://github.com/"},
-				Return: nil,
-			}
-			cmdFunctions["ssh"] = CmdFunctionParams{
-				Stdout: os.Stdout,
-				StdErr: os.Stderr,
-				Stdin: nil,
-				Args: []string{"-o", "StrictHostKeyChecking=accept-new", "git@github.com"},
-				Return: nil,
-			}})
+		var sshkey = "VALUE"
 
 		it("should execute required commands", func() {
 			defer utils.ResetEnv(os.Environ())
 			os.Clearenv()
 			os.Setenv("GIT_SSH_KEY", sshkey)
-			sshagent.CmdFunction = CmdSuccess
-			err := sshagent.Contribute(factory.Build)
+
+			mockRunner.EXPECT().Run( ioutil.Discard, os.Stderr, nil, "ssh-agent","-a", sshagent.SshAgentSockAddress)
+			mockRunner.EXPECT().Run( os.Stdout, os.Stderr, strings.NewReader(sshkey + "\n"), "ssh-add","-")
+			mockRunner.EXPECT().Run( os.Stdout, os.Stderr, nil, "git","config", "--global", "url.git@github.com:.insteadOf", "https://github.com/")
+			mockRunner.EXPECT().Run( os.Stdout, os.Stderr, nil, "ssh","-o", "StrictHostKeyChecking=accept-new", "git@github.com")
+			err := sshagent.Contribute(factory.Build, mockRunner)
 			Expect(err).To(BeNil())
 
 		})
@@ -120,34 +82,40 @@ func testContribute(t *testing.T, when spec.G, it spec.S) {
 		when("commands fail", func() {
 			it("should fail ssh-agent", func() {
 				ret := errors.New("ssh-agent failed to start")
-				changeCmdReturn("ssh-agent", ret)
+				mockRunner.EXPECT().Run(ioutil.Discard, os.Stderr, nil, "ssh-agent", "-a", sshagent.SshAgentSockAddress).Return(ret)
+
 				defer utils.ResetEnv(os.Environ())
 				os.Clearenv()
 				os.Setenv("GIT_SSH_KEY", sshkey)
-				sshagent.CmdFunction = CmdFailure
-				err := sshagent.Contribute(factory.Build)
+
+				err := sshagent.Contribute(factory.Build, mockRunner)
 				Expect(err).To(Equal(ret))
 			})
 
 			it("should fail ssh-add", func() {
 				ret := errors.New("ssh-add failed to start")
-				changeCmdReturn("ssh-add", ret)
+				mockRunner.EXPECT().Run( ioutil.Discard, os.Stderr, nil, "ssh-agent","-a", sshagent.SshAgentSockAddress)
+				mockRunner.EXPECT().Run( os.Stdout, os.Stderr, strings.NewReader(sshkey + "\n"), "ssh-add","-").Return(ret)
+
 				defer utils.ResetEnv(os.Environ())
 				os.Clearenv()
 				os.Setenv("GIT_SSH_KEY", sshkey)
-				sshagent.CmdFunction = CmdFailure
-				err := sshagent.Contribute(factory.Build)
+
+				err := sshagent.Contribute(factory.Build, mockRunner)
 				Expect(err).To(Equal(ret))
 			})
 
 			it("should fail git", func() {
 				ret := errors.New("git failed to start")
-				changeCmdReturn("git", ret)
+				mockRunner.EXPECT().Run( ioutil.Discard, os.Stderr, nil, "ssh-agent","-a", sshagent.SshAgentSockAddress)
+				mockRunner.EXPECT().Run( os.Stdout, os.Stderr, strings.NewReader(sshkey + "\n"), "ssh-add","-")
+				mockRunner.EXPECT().Run( os.Stdout, os.Stderr, nil, "git","config", "--global", "url.git@github.com:.insteadOf", "https://github.com/").Return(ret)
+
 				defer utils.ResetEnv(os.Environ())
 				os.Clearenv()
 				os.Setenv("GIT_SSH_KEY", sshkey)
-				sshagent.CmdFunction = CmdFailure
-				err := sshagent.Contribute(factory.Build)
+
+				err := sshagent.Contribute(factory.Build, mockRunner)
 				Expect(err).To(Equal(ret))
 			})
 
@@ -155,12 +123,16 @@ func testContribute(t *testing.T, when spec.G, it spec.S) {
 				// Need a failure with an exit code over 1
 				ret := exec.Command("ssh", "unknown.example.com").Run()
 
-				changeCmdReturn("ssh", ret)
+				mockRunner.EXPECT().Run( ioutil.Discard, os.Stderr, nil, "ssh-agent","-a", sshagent.SshAgentSockAddress)
+				mockRunner.EXPECT().Run( os.Stdout, os.Stderr, strings.NewReader(sshkey + "\n"), "ssh-add","-")
+				mockRunner.EXPECT().Run( os.Stdout, os.Stderr, nil, "git","config", "--global", "url.git@github.com:.insteadOf", "https://github.com/")
+				mockRunner.EXPECT().Run( os.Stdout, os.Stderr, nil, "ssh","-o", "StrictHostKeyChecking=accept-new", "git@github.com").Return(ret)
+
 				defer utils.ResetEnv(os.Environ())
 				os.Clearenv()
 				os.Setenv("GIT_SSH_KEY", sshkey)
-				sshagent.CmdFunction = CmdFailure
-				err := sshagent.Contribute(factory.Build)
+
+				err := sshagent.Contribute(factory.Build, mockRunner)
 				Expect(err).To(Equal(ret))
 			})
 
@@ -168,41 +140,5 @@ func testContribute(t *testing.T, when spec.G, it spec.S) {
 	})
 
 }
-
-func changeCmdReturn(command string, ret error) {
-	cmdFunction := cmdFunctions[command]
-	cmdFunction.Return = ret
-	cmdFunctions[command] = cmdFunction
-
-}
-
-func CmdSuccess (stdout, stderr io.Writer, stdin io.Reader, command string, args ...string) sshagent.Runner {
-	return &TestRunner {
-		Runner: func() error {
-			cmdFunction, ok := cmdFunctions[command]
-			Expect(ok).To(BeTrue(), fmt.Sprintf("Failed to find command %s", command))
-			Expect(stdout).To(Equal(cmdFunction.Stdout))
-			Expect(stderr).To(Equal(cmdFunction.StdErr))
-			if cmdFunction.Stdin == nil {
-				Expect(stdin).To(BeNil())
-			} else {
-				Expect(stdin).To(Equal(cmdFunction.Stdin))
-			}
-			Expect(args).To(Equal(cmdFunction.Args))
-			return cmdFunction.Return
-		},
-	}
-}
-
-func CmdFailure (_, _ io.Writer, _ io.Reader, command string, _ ...string) sshagent.Runner {
-	return &TestRunner{
-		Runner: func() error {
-			cmdFunction, ok := cmdFunctions[command]
-			Expect(ok).To(BeTrue(), fmt.Sprintf("Failed to find command %s", command))
-			return cmdFunction.Return
-		},
-	}
-}
-
 
 

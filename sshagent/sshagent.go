@@ -19,12 +19,12 @@ const (
 )
 
 type Runner interface {
-	Run() error
+ 	Run(stdout, stderr io.Writer, stdin io.Reader, command string, args ...string) error
 }
 
-var CmdFunction = run
 
-func Contribute(context build.Build) error {
+
+func Contribute(context build.Build, runner Runner) error {
 
 	dependency, wantLayer := context.BuildPlan[Dependency]
 	if !wantLayer {
@@ -39,27 +39,26 @@ func Contribute(context build.Build) error {
 	}
 
 	layer.Logger.SubsequentLine("Starting SSH agent")
-	cmd := CmdFunction(ioutil.Discard, os.Stderr, nil, "ssh-agent", "-a", SshAgentSockAddress)
-	err := cmd.Run()
+	err := runner.Run(ioutil.Discard, os.Stderr, nil, "ssh-agent", "-a", SshAgentSockAddress)
 	if err != nil {
 		layer.Logger.Error("Failed to start ssh-agent [%v]", err)
 		return err
 	}
 
 	os.Setenv("SSH_AUTH_SOCK", SshAgentSockAddress)
-	err = CmdFunction(os.Stdout, os.Stderr, strings.NewReader(sshkey +"\n"), "ssh-add", "-").Run()
+	err = runner.Run(os.Stdout, os.Stderr, strings.NewReader(sshkey +"\n"), "ssh-add", "-")
 	if err != nil {
 		layer.Logger.Error("Failed to add SSH Key [%v]", err)
 		return err
 	}
 
-	err = CmdFunction(os.Stdout, os.Stderr,nil, "git", "config", "--global", "url.git@github.com:.insteadOf","https://github.com/").Run()
+	err = runner.Run(os.Stdout, os.Stderr,nil, "git", "config", "--global", "url.git@github.com:.insteadOf","https://github.com/")
 	if err != nil {
 		layer.Logger.Error("Failed to configure git for SSH [%v]", err)
 		return err
 	}
 
-	err = CmdFunction(os.Stdout, os.Stderr,nil, "ssh", "-o", "StrictHostKeyChecking=accept-new", "git@github.com").Run()
+	err = runner.Run(os.Stdout, os.Stderr,nil, "ssh", "-o", "StrictHostKeyChecking=accept-new", "git@github.com")
 	if err != nil {
 		if exiterr, ok := err.(*exec.ExitError); ok {
 			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
@@ -85,7 +84,7 @@ func Contribute(context build.Build) error {
 }
 
 func flags(plan buildplan.Dependency) []layers.Flag {
-	flags := []layers.Flag{}
+	var flags []layers.Flag
 	cache, _ := plan.Metadata["cache"].(bool)
 	if cache {
 		flags = append(flags, layers.Cache)
@@ -101,11 +100,12 @@ func flags(plan buildplan.Dependency) []layers.Flag {
 	return flags
 }
 
-func run(stdout, stderr io.Writer, stdin io.Reader, command string, args ...string) Runner {
+type CmdRunner struct {}
+
+func (nr CmdRunner) Run(stdout, stderr io.Writer, stdin io.Reader, command string, args ...string) error {
 	cmd := exec.Command(command, args...)
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
 	cmd.Stdin = stdin
-	return cmd
+	return cmd.Run()
 }
-

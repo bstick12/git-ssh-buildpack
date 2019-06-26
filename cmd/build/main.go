@@ -23,7 +23,7 @@ func main() {
 		os.Exit(101)
 	}
 
-	code, err := RunBuild(context)
+	code, err := RunBuild(context, sshagent.CmdRunner{})
 	if err != nil {
 		context.Logger.Info(err.Error())
 	}
@@ -32,10 +32,10 @@ func main() {
 
 }
 
-func RunBuild(context build.Build) (int, error) {
+func RunBuild(context build.Build, runner sshagent.Runner) (int, error) {
 	context.Logger.FirstLine(context.Logger.PrettyIdentity(context.Buildpack))
 
-	err := sshagent.Contribute(context)
+	err := sshagent.Contribute(context, runner)
 	if err != nil {
 		return context.Failure(FailureStatusCode), errors.Errorf("Failed to find build plan to create Contributor for %s - [%v]", "ssh-agent", err)
 

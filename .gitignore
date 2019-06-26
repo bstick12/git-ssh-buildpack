@@ -2,3 +2,5 @@ git-ssh-buildpack.tgz
 git-ssh-buildpack_built/
 bin/
 coverage.txt
+.bin/
+compiled/

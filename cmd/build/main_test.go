@@ -1,11 +1,12 @@
 package main_test
 
 import (
-	"errors"
 	"github.com/bstick12/git-ssh-buildpack/sshagent"
 	"github.com/bstick12/git-ssh-buildpack/utils"
-	"io"
+	"github.com/golang/mock/gomock"
+	"io/ioutil"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/buildpack/libbuildpack/buildplan"
@@ -22,37 +23,31 @@ func TestUnitDetect(t *testing.T) {
 	spec.Run(t, "Build", testDetect, spec.Report(report.Terminal{}))
 }
 
-type TestRunner struct {
-	Runner func () error
-}
-
-func(tr *TestRunner) Run() error {
-	return tr.Runner()
-}
-
 func testDetect(t *testing.T, when spec.G, it spec.S) {
 
-	var factory *test.BuildFactory
+	var (
+		factory *test.BuildFactory
+		mockRunner  *sshagent.MockRunner
+		mockCtrl    *gomock.Controller
+	)
 
 	it.Before(func() {
 		RegisterTestingT(t)
 		factory = test.NewBuildFactory(t)
+		mockCtrl = gomock.NewController(t)
+		mockRunner = sshagent.NewMockRunner(mockCtrl)
 	})
 
 	when("building source", func() {
+
+		var sshKey = "VALUE"
+
 		it("should pass if successful", func() {
 
 			defer utils.ResetEnv(os.Environ())
 			os.Clearenv()
-			os.Setenv("GIT_SSH_KEY", "VALUE")
+			os.Setenv("GIT_SSH_KEY", sshKey)
 
-			sshagent.CmdFunction = func (_, _ io.Writer, _ io.Reader, _ string, _ ...string) sshagent.Runner {
-				return &TestRunner {
-					Runner: func() error {
-						return nil
-					},
-				}
-			}
 
 			factory.Build.BuildPlan = buildplan.BuildPlan{
 				sshagent.Dependency: buildplan.Dependency{
@@ -61,12 +56,18 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 					},
 				},
 			}
-			code, err := cmdBuild.RunBuild(factory.Build)
+
+			mockRunner.EXPECT().Run( ioutil.Discard, os.Stderr, nil, "ssh-agent","-a", sshagent.SshAgentSockAddress)
+			mockRunner.EXPECT().Run( os.Stdout, os.Stderr, strings.NewReader(sshKey + "\n"), "ssh-add","-")
+			mockRunner.EXPECT().Run( os.Stdout, os.Stderr, nil, "git","config", "--global", "url.git@github.com:.insteadOf", "https://github.com/")
+			mockRunner.EXPECT().Run( os.Stdout, os.Stderr, nil, "ssh","-o", "StrictHostKeyChecking=accept-new", "git@github.com")
+
+			code, err := cmdBuild.RunBuild(factory.Build, mockRunner)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(code).To(Equal(build.SuccessStatusCode))
 
-			sshagentLayer := factory.Build.Layers.Layer(sshagent.Dependency)
-			Expect(sshagentLayer).To(test.HaveLayerMetadata(true, false, false))
+			sshAgentLayer := factory.Build.Layers.Layer(sshagent.Dependency)
+			Expect(sshAgentLayer).To(test.HaveLayerMetadata(true, false, false))
 
 		})
 
@@ -74,16 +75,9 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 
 			defer utils.ResetEnv(os.Environ())
 			os.Clearenv()
-			os.Setenv("GIT_SSH_KEY", "VALUE")
+			os.Setenv("GIT_SSH_KEY", sshKey)
 
-			sshagent.CmdFunction = func (_, _ io.Writer, _ io.Reader, _ string, _ ...string) sshagent.Runner {
-				return &TestRunner {
-					Runner: func() error {
-						return errors.New("error")
-					},
-				}
-			}
-			code, err := cmdBuild.RunBuild(factory.Build)
+			code, err := cmdBuild.RunBuild(factory.Build, mockRunner)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).To(ContainSubstring("Failed to find build plan"))
 			Expect(code).To(Equal(cmdBuild.FailureStatusCode))
