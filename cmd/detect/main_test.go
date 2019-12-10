@@ -1,17 +1,19 @@
 package main_test
 
 import (
-	"github.com/bstick12/git-ssh-buildpack/sshagent"
 	"os"
 	"testing"
 
+	. "github.com/onsi/gomega"
+
 	"github.com/buildpack/libbuildpack/buildplan"
 
-	cmd_detect "github.com/bstick12/git-ssh-buildpack/cmd/detect"
-	"github.com/bstick12/git-ssh-buildpack/utils"
+	cmd_detect "github.com/avarteqgmbh/git-ssh-buildpack/cmd/detect"
+	"github.com/avarteqgmbh/git-ssh-buildpack/sshagent"
+	"github.com/avarteqgmbh/git-ssh-buildpack/utils"
+
 	"github.com/cloudfoundry/libcfbuildpack/detect"
 	"github.com/cloudfoundry/libcfbuildpack/test"
-	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
@@ -21,7 +23,6 @@ func TestUnitDetect(t *testing.T) {
 }
 
 func testDetect(t *testing.T, when spec.G, it spec.S) {
-
 	var factory *test.DetectFactory
 
 	it.Before(func() {
@@ -37,12 +38,16 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 			code, err := cmd_detect.RunDetect(factory.Detect)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(code).To(Equal(detect.PassStatusCode))
-			Expect(factory.Output).To(Equal(buildplan.BuildPlan{
-				sshagent.Dependency: buildplan.Dependency{
-					Metadata: buildplan.Metadata{
-						"build":  true,
-						"launch": false,
+			Expect(factory.Plans.Plan).To(Equal(buildplan.Plan{
+				Requires: []buildplan.Required{
+					{
+						Name:     sshagent.Dependency,
+						Version:  "",
+						Metadata: buildplan.Metadata{"build": true, "launch": false},
 					},
+				},
+				Provides: []buildplan.Provided{
+					{sshagent.Dependency},
 				},
 			}))
 		})
@@ -57,5 +62,4 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 			Expect(code).To(Equal(detect.FailStatusCode))
 		})
 	})
-
 }

@@ -2,24 +2,19 @@ package main
 
 import (
 	"fmt"
-	"github.com/bstick12/git-ssh-buildpack/sshagent"
 	"os"
 
-	"github.com/buildpack/libbuildpack/buildplan"
-	"github.com/pkg/errors"
+	"github.com/avarteqgmbh/git-ssh-buildpack/sshagent"
 
+	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
+	"github.com/pkg/errors"
 )
 
 func main() {
 	context, err := detect.DefaultDetect()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "failed to create a default detection context: %s", err)
-		os.Exit(detect.FailStatusCode)
-	}
-
-	if err := context.BuildPlan.Init(); err != nil {
-		fmt.Fprintf(os.Stderr, "Failed to initialize Build Plan: %s\n", err)
 		os.Exit(detect.FailStatusCode)
 	}
 
@@ -32,18 +27,22 @@ func main() {
 }
 
 func RunDetect(context detect.Detect) (int, error) {
-
 	if _, ok := os.LookupEnv("GIT_SSH_KEY"); ok {
-		return context.Pass(buildplan.BuildPlan{
-			sshagent.Dependency : buildplan.Dependency{
-				Metadata: buildplan.Metadata{
-					"build":  true,
-					"launch": false,
+		return context.Pass(buildplan.Plan{
+			Requires: []buildplan.Required{
+				{
+					Name: sshagent.Dependency,
+					Metadata: buildplan.Metadata{
+						"build":  true,
+						"launch": false,
+					},
 				},
+			},
+			Provides: []buildplan.Provided{
+				{sshagent.Dependency},
 			},
 		})
 	}
 
 	return detect.FailStatusCode, errors.New("No GIT_SSH_KEY variable found")
-
 }

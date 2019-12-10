@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/bstick12/git-ssh-buildpack/utils"
+	"github.com/avarteqgmbh/git-ssh-buildpack/utils"
 	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
