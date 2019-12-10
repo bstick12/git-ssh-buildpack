@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/bstick12/git-ssh-buildpack/sshagent"
 	"os"
 
-	"github.com/buildpack/libbuildpack/buildplan"
-	"github.com/pkg/errors"
+	"github.com/avarteqgmbh/git-ssh-buildpack/sshagent"
 
+	"github.com/buildpack/libbuildpack/buildpackplan"
 	"github.com/cloudfoundry/libcfbuildpack/build"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -16,7 +16,6 @@ const (
 )
 
 func main() {
-
 	context, err := build.DefaultBuild()
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "failed to create a default build context: %s", err)
@@ -29,7 +28,6 @@ func main() {
 	}
 
 	os.Exit(code)
-
 }
 
 func RunBuild(context build.Build, runner sshagent.Runner) (int, error) {
@@ -38,9 +36,6 @@ func RunBuild(context build.Build, runner sshagent.Runner) (int, error) {
 	err := sshagent.Contribute(context, runner)
 	if err != nil {
 		return context.Failure(FailureStatusCode), errors.Errorf("Failed to find build plan to create Contributor for %s - [%v]", "ssh-agent", err)
-
 	}
-	return context.Success(buildplan.BuildPlan{})
-
-
+	return context.Success(buildpackplan.Plan{})
 }

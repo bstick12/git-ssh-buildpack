@@ -3,55 +3,55 @@ package sshagent
 import (
 	"errors"
 	"fmt"
-	"github.com/buildpack/libbuildpack/buildplan"
-	"github.com/cloudfoundry/libcfbuildpack/build"
-	"github.com/cloudfoundry/libcfbuildpack/layers"
 	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
 	"syscall"
+
+	"github.com/buildpack/libbuildpack/buildpackplan"
+	"github.com/cloudfoundry/libcfbuildpack/build"
+	"github.com/cloudfoundry/libcfbuildpack/layers"
 )
 
 const (
-	Dependency  =  "sshagent"
+	Dependency  = "sshagent"
 	SockAddress = "/tmp/git-ssh-buildpack.sock"
 )
 
 type Runner interface {
- 	Run(stdout, stderr io.Writer, stdin io.Reader, command string, args ...string) error
+	Run(stdout, stderr io.Writer, stdin io.Reader, command string, args ...string) error
 }
 
 func Contribute(context build.Build, runner Runner) error {
-
-	dependency, wantLayer := context.BuildPlan[Dependency]
-	if !wantLayer {
-		return errors.New("layer %s is not wanted")
+	dependency, wantDependency, err := context.Plans.GetShallowMerged(Dependency)
+	if err != nil || !wantDependency {
+		return errors.New(fmt.Sprintf("layer %s is not wanted", Dependency))
 	}
 
 	layer := context.Layers.HelperLayer(Dependency, "SSH Agent Layer")
 	sshkey, ok := os.LookupEnv("GIT_SSH_KEY")
 	if !ok {
 		layer.Logger.Error("No GIT_SSH_KEY environment variable found")
-		return errors.New("no GIT_SSH_KEY environment variable found")
+		return errors.New("No GIT_SSH_KEY environment variable found")
 	}
 
 	layer.Logger.SubsequentLine("Starting SSH agent")
-	err := runner.Run(ioutil.Discard, os.Stderr, nil, "ssh-agent", "-a", SockAddress)
+	err = runner.Run(ioutil.Discard, os.Stderr, nil, "ssh-agent", "-a", SockAddress)
 	if err != nil {
 		layer.Logger.Error("Failed to start ssh-agent [%v]", err)
 		return err
 	}
 
 	os.Setenv("SSH_AUTH_SOCK", SockAddress)
-	err = runner.Run(os.Stdout, os.Stderr, strings.NewReader(sshkey +"\n"), "ssh-add", "-")
+	err = runner.Run(os.Stdout, os.Stderr, strings.NewReader(sshkey+"\n"), "ssh-add", "-")
 	if err != nil {
 		layer.Logger.Error("Failed to add SSH Key [%v]", err)
 		return err
 	}
 
-	for _, host :=  range getGitSshHosts() {
+	for _, host := range getGitSshHosts() {
 		layer.Logger.SubsequentLine("Configuring host [%s]", host)
 		err = runner.Run(os.Stdout, os.Stderr, nil, "git", "config", "--global",
 			fmt.Sprintf("url.git@%s:.insteadOf", host), fmt.Sprintf("https://%s/", host))
@@ -89,13 +89,14 @@ func Contribute(context build.Build, runner Runner) error {
 
 func getGitSshHosts() []string {
 	if value, ok := os.LookupEnv("GIT_SSH_HOSTS"); ok {
-		return strings.Split(value,",")
+		return strings.Split(value, ",")
 	}
 	return []string{"github.com"}
 }
 
-func flags(plan buildplan.Dependency) []layers.Flag {
-	var flags []layers.Flag
+func flags(plan buildpackplan.Plan) []layers.Flag {
+	flags := []layers.Flag{layers.Cache}
+
 	cache, _ := plan.Metadata["cache"].(bool)
 	if cache {
 		flags = append(flags, layers.Cache)
@@ -111,7 +112,7 @@ func flags(plan buildplan.Dependency) []layers.Flag {
 	return flags
 }
 
-type CmdRunner struct {}
+type CmdRunner struct{}
 
 func (nr CmdRunner) Run(stdout, stderr io.Writer, stdin io.Reader, command string, args ...string) error {
 	cmd := exec.Command(command, args...)
