@@ -35,6 +35,7 @@ func RunDetect(context detect.Detect) (int, error) {
 					Metadata: buildplan.Metadata{
 						"build":  true,
 						"launch": false,
+						"cache": false,
 					},
 				},
 			},

@@ -43,7 +43,11 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 					{
 						Name:     sshagent.Dependency,
 						Version:  "",
-						Metadata: buildplan.Metadata{"build": true, "launch": false},
+						Metadata: buildplan.Metadata{
+							"build": true,
+							"launch": false,
+							"cache": false,
+						},
 					},
 				},
 				Provides: []buildplan.Provided{
