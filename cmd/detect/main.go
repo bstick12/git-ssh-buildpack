@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/avarteqgmbh/git-ssh-buildpack/sshagent"
+	"github.com/bstick12/git-ssh-buildpack/sshagent"
 
 	"github.com/buildpack/libbuildpack/buildplan"
 	"github.com/cloudfoundry/libcfbuildpack/detect"
@@ -35,7 +35,7 @@ func RunDetect(context detect.Detect) (int, error) {
 					Metadata: buildplan.Metadata{
 						"build":  true,
 						"launch": false,
-						"cache": false,
+						"cache":  false,
 					},
 				},
 			},

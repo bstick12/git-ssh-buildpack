@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	cmdBuild "github.com/avarteqgmbh/git-ssh-buildpack/cmd/build"
-	"github.com/avarteqgmbh/git-ssh-buildpack/sshagent"
-	"github.com/avarteqgmbh/git-ssh-buildpack/utils"
+	cmdBuild "github.com/bstick12/git-ssh-buildpack/cmd/build"
+	"github.com/bstick12/git-ssh-buildpack/sshagent"
+	"github.com/bstick12/git-ssh-buildpack/utils"
 
 	"github.com/buildpack/libbuildpack/buildpackplan"
 	"github.com/cloudfoundry/libcfbuildpack/build"

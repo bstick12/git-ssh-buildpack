@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/avarteqgmbh/git-ssh-buildpack/sshagent"
+	"github.com/bstick12/git-ssh-buildpack/sshagent"
 
 	"github.com/buildpack/libbuildpack/buildpackplan"
 	"github.com/cloudfoundry/libcfbuildpack/build"

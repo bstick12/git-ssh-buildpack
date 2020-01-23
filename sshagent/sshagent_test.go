@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/avarteqgmbh/git-ssh-buildpack/sshagent"
-	"github.com/avarteqgmbh/git-ssh-buildpack/utils"
+	"github.com/bstick12/git-ssh-buildpack/sshagent"
+	"github.com/bstick12/git-ssh-buildpack/utils"
 
 	"github.com/buildpack/libbuildpack/buildpackplan"
 

@@ -1,4 +1,4 @@
-module github.com/avarteqgmbh/git-ssh-buildpack
+module github.com/bstick12/git-ssh-buildpack
 
 require (
 	github.com/buildpack/libbuildpack v1.25.4

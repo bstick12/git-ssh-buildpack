@@ -4,6 +4,10 @@ This is a [Cloud Native Buildpack V3](https://buildpacks.io/) that enables addin
 
 This buildpack is designed to work in collaboration with other buildpacks. It is compatible to API v0.2 and it supports the stacks "org.cloudfoundry.stacks.cflinuxfs3" and "io.buildpacks.stacks.bionic". It has been tested with the [pack CLI](https://github.com/buildpack/pack) v0.5.0.
 
+[![CircleCI](https://circleci.com/gh/bstick12/git-ssh-buildpack.svg?style=svg)](https://circleci.com/gh/bstick12/git-ssh-buildpack)
+[![Download](https://api.bintray.com/packages/bstick12/buildpacks/git-ssh-buildpack/images/download.svg?version=0.1.0) ](https://bintray.com/bstick12/buildpacks/git-ssh-buildpack/0.1.0/link)
+[![codecov](https://codecov.io/gh/bstick12/git-ssh-buildpack/branch/master/graph/badge.svg)](https://codecov.io/gh/bstick12/git-ssh-buildpack)
+
 ## Usage
 
 Export your SSH key to an environment variable named `GIT_SSH_KEY`
@@ -32,7 +36,7 @@ Add the buildpack e.g via the pack cli
 ```shell
 # see above to export your key into $GIT_SSH_KEY
 cd ~/workspace
-git clone https://github.com/avarteqgmbh/git-ssh-buildpack.git
+git clone https://github.com/bstick12/git-ssh-buildpack.git
 cd <your project>
 pack build <image-name> --builder cloudfoundry/cnb:cflinuxfs3 --buildpack ~/workspace/git-ssh-buildpack --env GIT_SSH_KEY ....
 ```
@@ -44,8 +48,6 @@ pack build <image-name> --builder cloudfoundry/cnb:cflinuxfs3 --buildpack ~/work
 * `scripts/package.sh` - Package the buildpack
 
 ## Authors
-
-This project was forked from https://github.com/bstick12/git-ssh-buildpack
 
 * [Brendan Nolan](https://github.com/bstick12)
 * [Khaled Blah](https://github.com/khaledavarteq)

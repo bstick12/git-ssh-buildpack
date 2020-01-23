@@ -1,7 +1,7 @@
 api = "0.2"
 
 [buildpack]
-id = "io.avarteqgmbh.buildpacks.git-ssh"
+id = "io.bstick12.buildpacks.git-ssh"
 version = "0.5.0"
 name = "GIT SSH buildpack"
 
@@ -14,3 +14,6 @@ id = "org.cloudfoundry.stacks.cflinuxfs3"
 
 [[stacks]]
 id = "io.buildpacks.stacks.bionic"
+
+[[stacks]]
+id = "org.cloudfoundry.stacks.tiny"
