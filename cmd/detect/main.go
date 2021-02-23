@@ -1,49 +1,50 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/avarteqgmbh/git-ssh-buildpack/sshagent"
+	"github.com/avarteqgmbh/git-ssh-buildpack/utils"
 
-	"github.com/buildpack/libbuildpack/buildplan"
-	"github.com/cloudfoundry/libcfbuildpack/detect"
+	"github.com/paketo-buildpacks/packit"
 	"github.com/pkg/errors"
 )
 
-func main() {
-	context, err := detect.DefaultDetect()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to create a default detection context: %s", err)
-		os.Exit(detect.FailStatusCode)
-	}
-
-	code, err := RunDetect(context)
-	if err != nil {
-		context.Logger.Info(err.Error())
-	}
-
-	os.Exit(code)
+// GitSSHBuildPlanMetadata represents the metadata for this buildpack
+type GitSSHBuildPlanMetadata struct {
+	Build  bool `toml:"build"`
+	Cache  bool `toml:"cache"`
+	Launch bool `toml:"launch"`
 }
 
-func RunDetect(context detect.Detect) (int, error) {
-	if _, ok := os.LookupEnv("GIT_SSH_KEY"); ok {
-		return context.Pass(buildplan.Plan{
-			Requires: []buildplan.Required{
-				{
-					Name: sshagent.Dependency,
-					Metadata: buildplan.Metadata{
-						"build":  true,
-						"launch": false,
-						"cache": false,
+func main() {
+	logEmitter := utils.NewLogEmitter(os.Stdout)
+	packit.Detect(Detect(logEmitter))
+}
+
+// Detect detects whether this Buildpack should participate
+func Detect(logger utils.LogEmitter) packit.DetectFunc {
+	return func(context packit.DetectContext) (packit.DetectResult, error) {
+		if _, ok := os.LookupEnv("GIT_SSH_KEY"); ok {
+			return packit.DetectResult{
+				Plan: packit.BuildPlan{
+					Provides: []packit.BuildPlanProvision{
+						{Name: sshagent.Dependency},
+					},
+					Requires: []packit.BuildPlanRequirement{
+						{
+							Name: sshagent.Dependency,
+							Metadata: GitSSHBuildPlanMetadata{
+								Build:  true,
+								Cache:  false,
+								Launch: false,
+							},
+						},
 					},
 				},
-			},
-			Provides: []buildplan.Provided{
-				{sshagent.Dependency},
-			},
-		})
-	}
+			}, nil
+		}
 
-	return detect.FailStatusCode, errors.New("No GIT_SSH_KEY variable found")
+		return packit.DetectResult{}, errors.New("No GIT_SSH_KEY variable found")
+	}
 }

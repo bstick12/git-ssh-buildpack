@@ -8,7 +8,8 @@ require (
 	github.com/golang/mock v1.4.4
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/onsi/gomega v1.10.5
-	github.com/pkg/errors v0.8.1
+	github.com/paketo-buildpacks/packit v0.7.0
+	github.com/pkg/errors v0.9.1
 	github.com/sclevine/spec v1.4.0
 	golang.org/x/net v0.0.0-20210222171744-9060382bd457 // indirect
 	golang.org/x/oauth2 v0.0.0-20210220000619-9bb904979d93 // indirect

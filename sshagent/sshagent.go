@@ -38,30 +38,30 @@ func Contribute(context build.Build, runner Runner) error {
 	layer := context.Layers.HelperLayer(Dependency, "SSH Agent Layer")
 	sshkey, ok := os.LookupEnv("GIT_SSH_KEY")
 	if !ok {
-		layer.Logger.Error("No GIT_SSH_KEY environment variable found")
+		layer.Logger.HeaderError("No GIT_SSH_KEY environment variable found")
 		return errors.New("No GIT_SSH_KEY environment variable found")
 	}
 
 	layer.Logger.SubsequentLine("Starting SSH agent")
 	err = runner.Run(ioutil.Discard, os.Stderr, nil, "ssh-agent", "-a", SockAddress)
 	if err != nil {
-		layer.Logger.Error("Failed to start ssh-agent [%v]", err)
+		layer.Logger.HeaderError("Failed to start ssh-agent [%v]", err)
 		return err
 	}
 
 	os.Setenv("SSH_AUTH_SOCK", SockAddress)
 	err = runner.Run(os.Stdout, os.Stderr, strings.NewReader(sshkey+"\n"), "ssh-add", "-")
 	if err != nil {
-		layer.Logger.Error("Failed to add SSH Key [%v]", err)
+		layer.Logger.HeaderError("Failed to add SSH Key [%v]", err)
 		return err
 	}
 
 	for _, host := range getGitSSHHosts() {
-		layer.Logger.SubsequentLine("Configuring host [%s]", host)
+		layer.Logger.Body("Configuring host [%s]", host)
 		err = runner.Run(os.Stdout, os.Stderr, nil, "git", "config", "--global",
 			fmt.Sprintf("url.git@%s:.insteadOf", host), fmt.Sprintf("https://%s/", host))
 		if err != nil {
-			layer.Logger.Error("Failed to configure git for SSH on host [%s] [%v]", host, err)
+			layer.Logger.HeaderError("Failed to configure git for SSH on host [%s] [%v]", host, err)
 			return err
 		}
 
@@ -80,7 +80,10 @@ func Contribute(context build.Build, runner Runner) error {
 	}
 
 	var sshAgentHelperLayerContributor = func(artifact string, layer layers.HelperLayer) error {
-		layer.AppendBuildEnv("SSH_AUTH_SOCK", "%s", SockAddress)
+		err = layer.AppendBuildEnv("SSH_AUTH_SOCK", "%s", SockAddress)
+		if err != nil {
+			return err
+		}
 		return nil
 	}
 

@@ -5,15 +5,12 @@ import (
 	"testing"
 
 	. "github.com/onsi/gomega"
-
-	"github.com/buildpack/libbuildpack/buildplan"
+	"github.com/paketo-buildpacks/packit"
 
 	cmd_detect "github.com/avarteqgmbh/git-ssh-buildpack/cmd/detect"
 	"github.com/avarteqgmbh/git-ssh-buildpack/sshagent"
 	"github.com/avarteqgmbh/git-ssh-buildpack/utils"
 
-	"github.com/cloudfoundry/libcfbuildpack/detect"
-	"github.com/cloudfoundry/libcfbuildpack/test"
 	"github.com/sclevine/spec"
 	"github.com/sclevine/spec/report"
 )
@@ -23,11 +20,8 @@ func TestUnitDetect(t *testing.T) {
 }
 
 func testDetect(t *testing.T, when spec.G, it spec.S) {
-	var factory *test.DetectFactory
-
 	it.Before(func() {
 		RegisterTestingT(t)
-		factory = test.NewDetectFactory(t)
 	})
 
 	when("the os environment variable is present", func() {
@@ -35,25 +29,27 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 			defer utils.ResetEnv(os.Environ())
 			os.Clearenv()
 			os.Setenv("GIT_SSH_KEY", "VALUE")
-			code, err := cmd_detect.RunDetect(factory.Detect)
+			logEmitter := utils.NewLogEmitter(os.Stdout)
+			detectFunc := cmd_detect.Detect(logEmitter)
+			detectResult, err := detectFunc(packit.DetectContext{})
 			Expect(err).NotTo(HaveOccurred())
-			Expect(code).To(Equal(detect.PassStatusCode))
-			Expect(factory.Plans.Plan).To(Equal(buildplan.Plan{
-				Requires: []buildplan.Required{
-					{
-						Name:     sshagent.Dependency,
-						Version:  "",
-						Metadata: buildplan.Metadata{
-							"build": true,
-							"launch": false,
-							"cache": false,
+			Expect(detectResult.Plan).To(Equal(
+				packit.BuildPlan{
+					Provides: []packit.BuildPlanProvision{
+						{Name: sshagent.Dependency},
+					},
+					Requires: []packit.BuildPlanRequirement{
+						{
+							Name: sshagent.Dependency,
+							Metadata: cmd_detect.GitSSHBuildPlanMetadata{
+								Build:  true,
+								Cache:  false,
+								Launch: false,
+							},
 						},
 					},
 				},
-				Provides: []buildplan.Provided{
-					{sshagent.Dependency},
-				},
-			}))
+			))
 		})
 	})
 
@@ -61,9 +57,11 @@ func testDetect(t *testing.T, when spec.G, it spec.S) {
 		it("should not add git-ssh-buildpack to the buildplan", func() {
 			defer utils.ResetEnv(os.Environ())
 			os.Clearenv()
-			code, err := cmd_detect.RunDetect(factory.Detect)
+			logEmitter := utils.NewLogEmitter(os.Stdout)
+			detectFunc := cmd_detect.Detect(logEmitter)
+			detectResult, err := detectFunc(packit.DetectContext{})
 			Expect(err).To(HaveOccurred())
-			Expect(code).To(Equal(detect.FailStatusCode))
+			Expect(detectResult.Plan).To(Equal(packit.BuildPlan{Provides: nil, Requires: nil, Or: nil}))
 		})
 	})
 }
