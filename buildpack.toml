@@ -3,6 +3,7 @@ api = "0.2"
 [buildpack]
   id = "io.avarteqgmbh.buildpacks.git-ssh"
   name = "GIT SSH buildpack"
+  version = "0.5.3"
   homepage = "https://github.com/avarteqgmbh/git-ssh-buildpack"
 
 [metadata]
