@@ -1,16 +1,62 @@
 #!/usr/bin/env bash
-set -uo pipefail
 
-cd "$( dirname "${BASH_SOURCE[0]}" )/.."
+set -eu
+set -o pipefail
 
-echo "Run Buildpack Unit Tests"
-go test ./... -v -run Unit -coverprofile=coverage.txt
-exit_code=$?
+readonly PROGDIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly BUILDPACKDIR="$(cd "${PROGDIR}/.." && pwd)"
 
-if [ "$exit_code" != "0" ]; then
-    echo -e "\n\033[0;31m** GO Test Failed **\033[0m"
-else
-    echo -e "\n\033[0;32m** GO Test Succeeded **\033[0m"
-fi
+# shellcheck source=SCRIPTDIR/.util/tools.sh
+source "${PROGDIR}/.util/tools.sh"
 
-exit $exit_code
+# shellcheck source=SCRIPTDIR/.util/print.sh
+source "${PROGDIR}/.util/print.sh"
+
+function main() {
+  while [[ "${#}" != 0 ]]; do
+    case "${1}" in
+      --help|-h)
+        shift 1
+        usage
+        exit 0
+        ;;
+
+      "")
+        # skip if the argument is empty
+        shift 1
+        ;;
+
+      *)
+        util::print::error "unknown argument \"${1}\""
+    esac
+  done
+
+  unit::run
+}
+
+function usage() {
+  cat <<-USAGE
+unit.sh [OPTIONS]
+
+Runs the unit test suite.
+
+OPTIONS
+  --help  -h  prints the command usage
+USAGE
+}
+
+function unit::run() {
+  util::print::title "Run Buildpack Unit Tests"
+
+  testout=$(mktemp)
+  pushd "${BUILDPACKDIR}" > /dev/null
+    if go test ./... -v -run Unit | tee "${testout}"; then
+      util::tools::tests::checkfocus "${testout}"
+      util::print::success "** GO Test Succeeded **"
+    else
+      util::print::error "** GO Test Failed **"
+    fi
+  popd > /dev/null
+}
+
+main "${@:-}"
