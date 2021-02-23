@@ -16,18 +16,23 @@ import (
 )
 
 const (
-	Dependency  = "sshagent"
+	// Dependency carries the name of the dependency this Buildpack offers
+	Dependency = "sshagent"
+
+	// SockAddress is the default address of the socket of the SSH agent started during build
 	SockAddress = "/tmp/git-ssh-buildpack.sock"
 )
 
+// Runner is an interface used during build and unit testing
 type Runner interface {
 	Run(stdout, stderr io.Writer, stdin io.Reader, command string, args ...string) error
 }
 
+// Contribute adds the logic this Buildpack contributes to a build
 func Contribute(context build.Build, runner Runner) error {
 	dependency, wantDependency, err := context.Plans.GetShallowMerged(Dependency)
 	if err != nil || !wantDependency {
-		return errors.New(fmt.Sprintf("layer %s is not wanted", Dependency))
+		return fmt.Errorf("layer %s is not wanted", Dependency)
 	}
 
 	layer := context.Layers.HelperLayer(Dependency, "SSH Agent Layer")
@@ -51,7 +56,7 @@ func Contribute(context build.Build, runner Runner) error {
 		return err
 	}
 
-	for _, host := range getGitSshHosts() {
+	for _, host := range getGitSSHHosts() {
 		layer.Logger.SubsequentLine("Configuring host [%s]", host)
 		err = runner.Run(os.Stdout, os.Stderr, nil, "git", "config", "--global",
 			fmt.Sprintf("url.git@%s:.insteadOf", host), fmt.Sprintf("https://%s/", host))
@@ -87,7 +92,7 @@ func Contribute(context build.Build, runner Runner) error {
 	return nil
 }
 
-func getGitSshHosts() []string {
+func getGitSSHHosts() []string {
 	if value, ok := os.LookupEnv("GIT_SSH_HOSTS"); ok {
 		return strings.Split(value, ",")
 	}
@@ -112,8 +117,10 @@ func flags(plan buildpackplan.Plan) []layers.Flag {
 	return flags
 }
 
+// CmdRunner is used to run commands
 type CmdRunner struct{}
 
+// Run a particular command and intercept stdin, stdout and stderr
 func (nr CmdRunner) Run(stdout, stderr io.Writer, stdin io.Reader, command string, args ...string) error {
 	cmd := exec.Command(command, args...)
 	cmd.Stdout = stdout

@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// ResetEnv resets an enviroment
 func ResetEnv(origEnv []string) {
 	for _, pair := range origEnv {
 		i := strings.Index(pair[1:], "=") + 1
