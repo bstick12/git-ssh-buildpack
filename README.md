@@ -1,6 +1,6 @@
 # GIT SSH key buildpack for Github/Bitbucket
 
-This is a [Cloud Native Buildpack V3](https://buildpacks.io/) that enables adding an SSH key to the build process and forces git to use SSH rather than HTTPS for communication with [Github](https://github.com) or [Bitbucket](https://bitbucket.org). It requires [Go v1.13](https://golang.org).
+This is a [Cloud Native Buildpack V3](https://buildpacks.io/) that enables adding an SSH key to the build process and forces git to use SSH rather than HTTPS for communication with [Github](https://github.com) or [Bitbucket](https://bitbucket.org). It requires [Go v1.13](https://golang.org) or later.
 
 This buildpack is designed to work in collaboration with other buildpacks. It is compatible to API v0.2 and it supports the stacks "org.cloudfoundry.stacks.cflinuxfs3" and "io.buildpacks.stacks.bionic". It has been tested with the [pack CLI](https://github.com/buildpack/pack) v0.5.0.
 
