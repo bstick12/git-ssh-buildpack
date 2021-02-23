@@ -4,7 +4,6 @@ on:
   push:
     branches:
     - main
-    - master
 
 jobs:
   unit:
@@ -48,7 +47,7 @@ jobs:
       uses: paketo-buildpacks/github-config/actions/release/create@main
       with:
         repo: ${{ github.repository }}
-        token: ${{ secrets.MS_BOT_GITHUB_TOKEN }}
+        token: ${{ github.token }}
         tag_name: v${{ steps.tag.outputs.tag }}
         target_commitish: ${{ github.sha }}
         name: v${{ steps.tag.outputs.tag }}
