@@ -47,7 +47,7 @@ jobs:
       uses: paketo-buildpacks/github-config/actions/release/create@main
       with:
         repo: ${{ github.repository }}
-        token: ${{ github.token }}
+        token: ${{ secrets.MS_BOT_GITHUB_TOKEN }}
         tag_name: v${{ steps.tag.outputs.tag }}
         target_commitish: ${{ github.sha }}
         name: v${{ steps.tag.outputs.tag }}
@@ -66,3 +66,4 @@ jobs:
               "content_type": "application/gzip"
             }
           ]
+          

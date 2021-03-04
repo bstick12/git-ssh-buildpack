@@ -42,7 +42,7 @@ func Contribute(context build.Build, runner Runner) error {
 		return errors.New("No GIT_SSH_KEY environment variable found")
 	}
 
-	layer.Logger.SubsequentLine("Starting SSH agent")
+	layer.Logger.Body("Starting SSH agent")
 	err = runner.Run(ioutil.Discard, os.Stderr, nil, "ssh-agent", "-a", SockAddress)
 	if err != nil {
 		layer.Logger.HeaderError("Failed to start ssh-agent [%v]", err)
@@ -71,7 +71,7 @@ func Contribute(context build.Build, runner Runner) error {
 			if exitErr, ok := err.(*exec.ExitError); ok {
 				if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
 					if status.ExitStatus() > 1 {
-						layer.Logger.Error("Failed to authorize with [%s]", host)
+						layer.Logger.BodyError("Failed to authorize with [%s]", host)
 						return err
 					}
 				}
@@ -88,7 +88,7 @@ func Contribute(context build.Build, runner Runner) error {
 	}
 
 	if err := layer.Contribute(sshAgentHelperLayerContributor, flags(dependency)...); err != nil {
-		layer.Logger.Error("Failed to contribute helper layer [%v]", err)
+		layer.Logger.BodyError("Failed to contribute helper layer [%v]", err)
 		return err
 	}
 
