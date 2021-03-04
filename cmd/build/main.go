@@ -31,7 +31,7 @@ func main() {
 }
 
 func RunBuild(context build.Build, runner sshagent.Runner) (int, error) {
-	context.Logger.FirstLine(context.Logger.PrettyIdentity(context.Buildpack))
+	context.Logger.Title(context.Buildpack)
 
 	err := sshagent.Contribute(context, runner)
 	if err != nil {
