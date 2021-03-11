@@ -4,6 +4,8 @@ This is a [Cloud Native Buildpack V3](https://buildpacks.io/) that enables addin
 
 This buildpack is designed to work in collaboration with other buildpacks. It is compatible to API v0.2 and it supports the stacks "org.cloudfoundry.stacks.cflinuxfs3" and "io.buildpacks.stacks.bionic". It has been tested with the [pack CLI](https://github.com/buildpack/pack) v0.5.0.
 
+List of hosts to communicate with can be defined in `GIT_SSH_HOSTS` environment variable as a comma separated list. Default value is `github.com` if `GIT_SSH_HOSTS` is not defined.
+
 ## Usage
 
 Export your SSH key to an environment variable named `GIT_SSH_KEY`
@@ -34,8 +36,10 @@ Add the buildpack e.g via the pack cli
 cd ~/workspace
 git clone https://github.com/avarteqgmbh/git-ssh-buildpack.git
 cd <your project>
-pack build <image-name> --builder cloudfoundry/cnb:cflinuxfs3 --buildpack ~/workspace/git-ssh-buildpack --env GIT_SSH_KEY ....
+pack build <image-name> --builder cloudfoundry/cnb:cflinuxfs3 --buildpack ~/workspace/git-ssh-buildpack --env GIT_SSH_KEY --env GIT_SSH_HOSTS ....
 ```
+
+If an environment variable `GIT_SSH_DONT_CONNECT` is defined and passed to `pack`, buildpack will not connect to remote hosts, add their keys to known-hosts and check validity of added certificate.
 
 ## Development
 
