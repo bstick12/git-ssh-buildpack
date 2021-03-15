@@ -1,7 +1,12 @@
 # cloud.google.com/go v0.78.0
+## explicit
 cloud.google.com/go/compute/metadata
 # github.com/BurntSushi/toml v0.3.1
+## explicit
 github.com/BurntSushi/toml
+# github.com/ForestEckhardt/freezer v0.0.6
+github.com/ForestEckhardt/freezer
+github.com/ForestEckhardt/freezer/github
 # github.com/Masterminds/semver v1.5.0
 github.com/Masterminds/semver
 # github.com/Masterminds/semver/v3 v3.1.1
@@ -9,6 +14,7 @@ github.com/Masterminds/semver/v3
 # github.com/VividCortex/ewma v1.1.1
 github.com/VividCortex/ewma
 # github.com/buildpack/libbuildpack v1.25.11
+## explicit
 github.com/buildpack/libbuildpack/application
 github.com/buildpack/libbuildpack/build
 github.com/buildpack/libbuildpack/buildpack
@@ -25,6 +31,7 @@ github.com/buildpack/libbuildpack/stack
 github.com/cheggaaa/pb/v3
 github.com/cheggaaa/pb/v3/termutil
 # github.com/cloudfoundry/libcfbuildpack v1.91.23
+## explicit
 github.com/cloudfoundry/libcfbuildpack/build
 github.com/cloudfoundry/libcfbuildpack/buildpack
 github.com/cloudfoundry/libcfbuildpack/buildpackplan
@@ -37,12 +44,14 @@ github.com/cloudfoundry/libcfbuildpack/runner
 github.com/cloudfoundry/libcfbuildpack/services
 github.com/cloudfoundry/libcfbuildpack/test
 # github.com/fatih/color v1.10.0
+## explicit
 github.com/fatih/color
 # github.com/gabriel-vasile/mimetype v1.1.2
 github.com/gabriel-vasile/mimetype
 github.com/gabriel-vasile/mimetype/internal/json
 github.com/gabriel-vasile/mimetype/internal/matchers
 # github.com/golang/mock v1.4.4
+## explicit
 github.com/golang/mock/gomock
 # github.com/golang/protobuf v1.4.3
 github.com/golang/protobuf/proto
@@ -50,11 +59,15 @@ github.com/golang/protobuf/proto
 github.com/mattn/go-colorable
 # github.com/mattn/go-isatty v0.0.12
 github.com/mattn/go-isatty
-# github.com/mattn/go-runewidth v0.0.8
+# github.com/mattn/go-runewidth v0.0.9
 github.com/mattn/go-runewidth
 # github.com/mitchellh/mapstructure v1.4.1
+## explicit
 github.com/mitchellh/mapstructure
+# github.com/oklog/ulid v1.3.1
+github.com/oklog/ulid
 # github.com/onsi/gomega v1.10.5
+## explicit
 github.com/onsi/gomega
 github.com/onsi/gomega/format
 github.com/onsi/gomega/internal/assertion
@@ -67,17 +80,25 @@ github.com/onsi/gomega/matchers/support/goraph/edge
 github.com/onsi/gomega/matchers/support/goraph/node
 github.com/onsi/gomega/matchers/support/goraph/util
 github.com/onsi/gomega/types
+# github.com/paketo-buildpacks/occam v0.1.2
+## explicit
+github.com/paketo-buildpacks/occam
+github.com/paketo-buildpacks/occam/matchers
 # github.com/paketo-buildpacks/packit v0.7.0
+## explicit
 github.com/paketo-buildpacks/packit
 github.com/paketo-buildpacks/packit/cargo
 github.com/paketo-buildpacks/packit/fs
 github.com/paketo-buildpacks/packit/internal
+github.com/paketo-buildpacks/packit/pexec
 github.com/paketo-buildpacks/packit/postal
 github.com/paketo-buildpacks/packit/scribe
 github.com/paketo-buildpacks/packit/vacation
 # github.com/pkg/errors v0.9.1
+## explicit
 github.com/pkg/errors
 # github.com/sclevine/spec v1.4.0
+## explicit
 github.com/sclevine/spec
 github.com/sclevine/spec/report
 # github.com/ulikunitz/xz v0.5.10
@@ -87,20 +108,23 @@ github.com/ulikunitz/xz/internal/xlog
 github.com/ulikunitz/xz/lzma
 # github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8
 github.com/xi2/xz
-# golang.org/x/net v0.0.0-20210222171744-9060382bd457
+# golang.org/x/net v0.0.0-20210226172049-e18ecbb05110
+## explicit
 golang.org/x/net/context
 golang.org/x/net/context/ctxhttp
 golang.org/x/net/html
 golang.org/x/net/html/atom
 golang.org/x/net/html/charset
 # golang.org/x/oauth2 v0.0.0-20210220000619-9bb904979d93
+## explicit
 golang.org/x/oauth2
 golang.org/x/oauth2/google
 golang.org/x/oauth2/google/internal/externalaccount
 golang.org/x/oauth2/internal
 golang.org/x/oauth2/jws
 golang.org/x/oauth2/jwt
-# golang.org/x/sys v0.0.0-20210223085322-b80eb88b80d2
+# golang.org/x/sys v0.0.0-20210303074136-134d130e1a04
+## explicit
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 # golang.org/x/text v0.3.5
@@ -160,4 +184,5 @@ google.golang.org/protobuf/reflect/protoregistry
 google.golang.org/protobuf/runtime/protoiface
 google.golang.org/protobuf/runtime/protoimpl
 # gopkg.in/yaml.v2 v2.4.0
+## explicit
 gopkg.in/yaml.v2

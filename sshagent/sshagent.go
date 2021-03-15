@@ -65,14 +65,17 @@ func Contribute(context build.Build, runner Runner) error {
 			return err
 		}
 
-		err = runner.Run(os.Stdout, os.Stderr, nil, "ssh", "-o", "StrictHostKeyChecking=accept-new",
-			fmt.Sprintf("git@%s", host))
-		if err != nil {
-			if exitErr, ok := err.(*exec.ExitError); ok {
-				if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
-					if status.ExitStatus() > 1 {
-						layer.Logger.BodyError("Failed to authorize with [%s]", host)
-						return err
+		_, ok = os.LookupEnv("GIT_SSH_DONT_CONNECT")
+		if !ok {
+			err = runner.Run(os.Stdout, os.Stderr, nil, "ssh", "-o", "StrictHostKeyChecking=accept-new",
+				fmt.Sprintf("git@%s", host))
+			if err != nil {
+				if exitErr, ok := err.(*exec.ExitError); ok {
+					if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
+						if status.ExitStatus() > 1 {
+							layer.Logger.BodyError("Failed to authorize with [%s]", host)
+							return err
+						}
 					}
 				}
 			}

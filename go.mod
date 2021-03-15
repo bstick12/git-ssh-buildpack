@@ -2,12 +2,14 @@ module github.com/avarteqgmbh/git-ssh-buildpack
 
 require (
 	cloud.google.com/go v0.78.0 // indirect
+	github.com/BurntSushi/toml v0.3.1
 	github.com/buildpack/libbuildpack v1.25.11
 	github.com/cloudfoundry/libcfbuildpack v1.91.23
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/golang/mock v1.4.4
 	github.com/mitchellh/mapstructure v1.4.1 // indirect
 	github.com/onsi/gomega v1.10.5
+	github.com/paketo-buildpacks/occam v0.1.2
 	github.com/paketo-buildpacks/packit v0.7.0
 	github.com/pkg/errors v0.9.1
 	github.com/sclevine/spec v1.4.0
@@ -17,4 +19,4 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
-go 1.13
+go 1.16
