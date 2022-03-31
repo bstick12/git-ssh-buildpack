@@ -10,9 +10,8 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/buildpack/libbuildpack/buildpackplan"
-	"github.com/cloudfoundry/libcfbuildpack/build"
-	"github.com/cloudfoundry/libcfbuildpack/layers"
+	"github.com/paketo-buildpacks/packit/v2"
+	"github.com/paketo-buildpacks/packit/v2/scribe"
 )
 
 const (
@@ -29,40 +28,44 @@ type Runner interface {
 }
 
 // Contribute adds the logic this Buildpack contributes to a build
-func Contribute(context build.Build, runner Runner) error {
-	dependency, wantDependency, err := context.Plans.GetShallowMerged(Dependency)
-	if err != nil || !wantDependency {
-		return fmt.Errorf("layer %s is not wanted", Dependency)
-	}
+func Contribute(context packit.BuildContext, logger scribe.Emitter, runner Runner) (packit.BuildResult, error) {
 
-	layer := context.Layers.HelperLayer(Dependency, "SSH Agent Layer")
+	logger.Title("%s %s", context.BuildpackInfo.Name, context.BuildpackInfo.Version)
+
+	assetsLayer, err := context.Layers.Get(Dependency)
+	if err != nil {
+		return packit.BuildResult{}, err
+	}
+	logger.Debug.Subprocess(assetsLayer.Path)
+	logger.Debug.Break()
+
 	sshkey, ok := os.LookupEnv("GIT_SSH_KEY")
 	if !ok {
-		layer.Logger.HeaderError("No GIT_SSH_KEY environment variable found")
-		return errors.New("No GIT_SSH_KEY environment variable found")
+		logger.Process("No GIT_SSH_KEY environment variable found")
+		return packit.BuildResult{}, errors.New("No GIT_SSH_KEY environment variable found")
 	}
 
-	layer.Logger.Body("Starting SSH agent")
+	logger.Subprocess("Starting SSH agent")
 	err = runner.Run(ioutil.Discard, os.Stderr, nil, "ssh-agent", "-a", SockAddress)
 	if err != nil {
-		layer.Logger.HeaderError("Failed to start ssh-agent [%v]", err)
-		return err
+		logger.Subprocess("Failed to start ssh-agent [%v]", err)
+		return packit.BuildResult{}, err
 	}
 
 	os.Setenv("SSH_AUTH_SOCK", SockAddress)
 	err = runner.Run(os.Stdout, os.Stderr, strings.NewReader(sshkey+"\n"), "ssh-add", "-")
 	if err != nil {
-		layer.Logger.HeaderError("Failed to add SSH Key [%v]", err)
-		return err
+		logger.Subprocess("Failed to add SSH Key [%v]", err)
+		return packit.BuildResult{}, err
 	}
 
 	for _, host := range getGitSSHHosts() {
-		layer.Logger.Body("Configuring host [%s]", host)
+		logger.Subprocess("Configuring host [%s]", host)
 		err = runner.Run(os.Stdout, os.Stderr, nil, "git", "config", "--global",
 			fmt.Sprintf("url.git@%s:.insteadOf", host), fmt.Sprintf("https://%s/", host))
 		if err != nil {
-			layer.Logger.HeaderError("Failed to configure git for SSH on host [%s] [%v]", host, err)
-			return err
+			logger.Subprocess("Failed to configure git for SSH on host [%s] [%v]", host, err)
+			return packit.BuildResult{}, err
 		}
 
 		_, ok = os.LookupEnv("GIT_SSH_DONT_CONNECT")
@@ -73,8 +76,8 @@ func Contribute(context build.Build, runner Runner) error {
 				if exitErr, ok := err.(*exec.ExitError); ok {
 					if status, ok := exitErr.Sys().(syscall.WaitStatus); ok {
 						if status.ExitStatus() > 1 {
-							layer.Logger.BodyError("Failed to authorize with [%s]", host)
-							return err
+							logger.Subprocess("Failed to authorize with [%s]", host)
+							return packit.BuildResult{}, err
 						}
 					}
 				}
@@ -82,20 +85,12 @@ func Contribute(context build.Build, runner Runner) error {
 		}
 	}
 
-	var sshAgentHelperLayerContributor = func(artifact string, layer layers.HelperLayer) error {
-		err = layer.AppendBuildEnv("SSH_AUTH_SOCK", "%s", SockAddress)
-		if err != nil {
-			return err
-		}
-		return nil
-	}
+	assetsLayer.BuildEnv.Default("SSH_AUTH_SOCK", SockAddress)
+	assetsLayer.Launch = true
 
-	if err := layer.Contribute(sshAgentHelperLayerContributor, flags(dependency)...); err != nil {
-		layer.Logger.BodyError("Failed to contribute helper layer [%v]", err)
-		return err
-	}
-
-	return nil
+	return packit.BuildResult{
+		Layers: []packit.Layer{assetsLayer},
+	}, nil
 }
 
 func getGitSSHHosts() []string {
@@ -103,24 +98,6 @@ func getGitSSHHosts() []string {
 		return strings.Split(value, ",")
 	}
 	return []string{"github.com"}
-}
-
-func flags(plan buildpackplan.Plan) []layers.Flag {
-	flags := []layers.Flag{layers.Cache}
-
-	cache, _ := plan.Metadata["cache"].(bool)
-	if cache {
-		flags = append(flags, layers.Cache)
-	}
-	build, _ := plan.Metadata["build"].(bool)
-	if build {
-		flags = append(flags, layers.Build)
-	}
-	launch, _ := plan.Metadata["launch"].(bool)
-	if launch {
-		flags = append(flags, layers.Launch)
-	}
-	return flags
 }
 
 // CmdRunner is used to run commands

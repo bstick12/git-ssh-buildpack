@@ -1,4 +1,4 @@
-api = "0.2"
+api = "0.7"
 
 [buildpack]
 id = "io.avarteqgmbh.buildpacks.git-ssh"
@@ -6,7 +6,7 @@ name = "GIT SSH buildpack"
 homepage = "https://github.com/avarteqgmbh/git-ssh-buildpack"
 
 [metadata]
-include-files = ["bin/build", "bin/detect", "buildpack.toml"]
+include-files = ["bin/build", "bin/detect", "bin/run", "buildpack.toml"]
 pre-package = "./scripts/build.sh"
 
 [[stacks]]

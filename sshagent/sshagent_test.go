@@ -10,10 +10,9 @@ import (
 
 	"github.com/avarteqgmbh/git-ssh-buildpack/sshagent"
 	"github.com/avarteqgmbh/git-ssh-buildpack/utils"
+	"github.com/paketo-buildpacks/packit/v2"
+	"github.com/paketo-buildpacks/packit/v2/scribe"
 
-	"github.com/buildpack/libbuildpack/buildpackplan"
-
-	"github.com/cloudfoundry/libcfbuildpack/test"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/gomega"
 	"github.com/sclevine/spec"
@@ -23,39 +22,34 @@ import (
 //go:generate mockgen -source=sshagent.go -destination=sshagent_mocks.go -package=sshagent
 
 func TestUnitDetect(t *testing.T) {
-	spec.Run(t, "Contributed", testSshAgent, spec.Report(report.Terminal{}))
+	spec.Run(t, "SSH Agent", testSshAgent, spec.Report(report.Terminal{}))
 }
 
 func testSshAgent(t *testing.T, when spec.G, it spec.S) {
+	Expect := NewWithT(t).Expect
+
 	var (
-		factory    *test.BuildFactory
 		mockRunner *sshagent.MockRunner
 		mockCtrl   *gomock.Controller
+		logger     scribe.Emitter
+		context    packit.BuildContext
 	)
 
 	it.Before(func() {
-		RegisterTestingT(t)
-		factory = test.NewBuildFactory(t)
-
 		mockCtrl = gomock.NewController(t)
 		mockRunner = sshagent.NewMockRunner(mockCtrl)
+		logger = scribe.NewEmitter(os.Stdout).WithLevel(os.Getenv("BP_LOG_LEVEL"))
+		context = packit.BuildContext{}
 
-		factory.AddPlan(buildpackplan.Plan{
-			Name:     sshagent.Dependency,
-			Version:  "",
-			Metadata: buildpackplan.Metadata{"build": true},
-		})
 	})
 
 	when("GIT_SSH_KEY is not available", func() {
 		it("should return err", func() {
-
 			defer utils.ResetEnv(os.Environ())
 			os.Clearenv()
-			err := sshagent.Contribute(factory.Build, mockRunner)
+			_, err := sshagent.Contribute(context, logger, mockRunner)
 			Expect(err).To(HaveOccurred())
 			Expect(err.Error()).Should(ContainSubstring("No GIT_SSH_KEY environment variable found"))
-
 		})
 	})
 
@@ -75,7 +69,7 @@ func testSshAgent(t *testing.T, when spec.G, it spec.S) {
 			mockRunner.EXPECT().Run(os.Stdout, os.Stderr, nil, "git", "config", "--global", "url.git@github.com:.insteadOf", "https://github.com/")
 
 			mockRunner.EXPECT().Run(os.Stdout, os.Stderr, nil, "ssh", "-o", "StrictHostKeyChecking=accept-new", "git@github.com")
-			err := sshagent.Contribute(factory.Build, mockRunner)
+			_, err := sshagent.Contribute(context, logger, mockRunner)
 			Expect(err).To(BeNil())
 		})
 
@@ -94,7 +88,7 @@ func testSshAgent(t *testing.T, when spec.G, it spec.S) {
 				mockRunner.EXPECT().Run(os.Stdout, os.Stderr, nil, "ssh", "-o", "StrictHostKeyChecking=accept-new", "git@bitbucket.org")
 				mockRunner.EXPECT().Run(os.Stdout, os.Stderr, nil, "ssh", "-o", "StrictHostKeyChecking=accept-new", "git@gitlab.com")
 
-				err := sshagent.Contribute(factory.Build, mockRunner)
+				_, err := sshagent.Contribute(context, logger, mockRunner)
 				Expect(err).To(BeNil())
 			})
 		})
@@ -108,7 +102,7 @@ func testSshAgent(t *testing.T, when spec.G, it spec.S) {
 				os.Clearenv()
 				os.Setenv("GIT_SSH_KEY", sshkey)
 
-				err := sshagent.Contribute(factory.Build, mockRunner)
+				_, err := sshagent.Contribute(context, logger, mockRunner)
 				Expect(err).To(Equal(ret))
 			})
 
@@ -121,7 +115,7 @@ func testSshAgent(t *testing.T, when spec.G, it spec.S) {
 				os.Clearenv()
 				os.Setenv("GIT_SSH_KEY", sshkey)
 
-				err := sshagent.Contribute(factory.Build, mockRunner)
+				_, err := sshagent.Contribute(context, logger, mockRunner)
 				Expect(err).To(Equal(ret))
 			})
 
@@ -135,7 +129,7 @@ func testSshAgent(t *testing.T, when spec.G, it spec.S) {
 				os.Clearenv()
 				os.Setenv("GIT_SSH_KEY", sshkey)
 
-				err := sshagent.Contribute(factory.Build, mockRunner)
+				_, err := sshagent.Contribute(context, logger, mockRunner)
 				Expect(err).To(Equal(ret))
 			})
 
@@ -152,7 +146,7 @@ func testSshAgent(t *testing.T, when spec.G, it spec.S) {
 				os.Clearenv()
 				os.Setenv("GIT_SSH_KEY", sshkey)
 
-				err := sshagent.Contribute(factory.Build, mockRunner)
+				_, err := sshagent.Contribute(context, logger, mockRunner)
 				Expect(err).To(Equal(ret))
 			})
 		})

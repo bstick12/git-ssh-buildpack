@@ -1,6 +1,3 @@
-# cloud.google.com/go/compute v1.5.0
-## explicit; go 1.15
-cloud.google.com/go/compute/metadata
 # github.com/BurntSushi/toml v1.0.0
 ## explicit; go 1.16
 github.com/BurntSushi/toml
@@ -9,49 +6,9 @@ github.com/BurntSushi/toml/internal
 ## explicit; go 1.16
 github.com/ForestEckhardt/freezer
 github.com/ForestEckhardt/freezer/github
-# github.com/Masterminds/semver v1.5.0
-## explicit
-github.com/Masterminds/semver
 # github.com/Masterminds/semver/v3 v3.1.1
 ## explicit; go 1.12
 github.com/Masterminds/semver/v3
-# github.com/VividCortex/ewma v1.2.0
-## explicit; go 1.12
-github.com/VividCortex/ewma
-# github.com/buildpack/libbuildpack v1.25.11
-## explicit; go 1.13
-github.com/buildpack/libbuildpack/application
-github.com/buildpack/libbuildpack/build
-github.com/buildpack/libbuildpack/buildpack
-github.com/buildpack/libbuildpack/buildpackplan
-github.com/buildpack/libbuildpack/buildplan
-github.com/buildpack/libbuildpack/detect
-github.com/buildpack/libbuildpack/internal
-github.com/buildpack/libbuildpack/layers
-github.com/buildpack/libbuildpack/logger
-github.com/buildpack/libbuildpack/platform
-github.com/buildpack/libbuildpack/services
-github.com/buildpack/libbuildpack/stack
-# github.com/cheggaaa/pb/v3 v3.0.8
-## explicit; go 1.12
-github.com/cheggaaa/pb/v3
-github.com/cheggaaa/pb/v3/termutil
-# github.com/cloudfoundry/libcfbuildpack v1.91.23
-## explicit; go 1.13
-github.com/cloudfoundry/libcfbuildpack/build
-github.com/cloudfoundry/libcfbuildpack/buildpack
-github.com/cloudfoundry/libcfbuildpack/buildpackplan
-github.com/cloudfoundry/libcfbuildpack/detect
-github.com/cloudfoundry/libcfbuildpack/helper
-github.com/cloudfoundry/libcfbuildpack/internal
-github.com/cloudfoundry/libcfbuildpack/layers
-github.com/cloudfoundry/libcfbuildpack/logger
-github.com/cloudfoundry/libcfbuildpack/runner
-github.com/cloudfoundry/libcfbuildpack/services
-github.com/cloudfoundry/libcfbuildpack/test
-# github.com/fatih/color v1.13.0
-## explicit; go 1.13
-github.com/fatih/color
 # github.com/gabriel-vasile/mimetype v1.4.0
 ## explicit; go 1.12
 github.com/gabriel-vasile/mimetype
@@ -61,21 +18,6 @@ github.com/gabriel-vasile/mimetype/internal/magic
 # github.com/golang/mock v1.6.0
 ## explicit; go 1.11
 github.com/golang/mock/gomock
-# github.com/golang/protobuf v1.5.2
-## explicit; go 1.9
-github.com/golang/protobuf/proto
-# github.com/mattn/go-colorable v0.1.12
-## explicit; go 1.13
-github.com/mattn/go-colorable
-# github.com/mattn/go-isatty v0.0.14
-## explicit; go 1.12
-github.com/mattn/go-isatty
-# github.com/mattn/go-runewidth v0.0.13
-## explicit; go 1.9
-github.com/mattn/go-runewidth
-# github.com/mitchellh/mapstructure v1.4.3
-## explicit; go 1.14
-github.com/mitchellh/mapstructure
 # github.com/oklog/ulid v1.3.1
 ## explicit
 github.com/oklog/ulid
@@ -96,31 +38,22 @@ github.com/onsi/gomega/types
 github.com/paketo-buildpacks/occam
 github.com/paketo-buildpacks/occam/matchers
 github.com/paketo-buildpacks/occam/packagers
-# github.com/paketo-buildpacks/packit v1.3.1
-## explicit; go 1.16
-github.com/paketo-buildpacks/packit
-github.com/paketo-buildpacks/packit/cargo
-github.com/paketo-buildpacks/packit/fs
-github.com/paketo-buildpacks/packit/internal
-github.com/paketo-buildpacks/packit/postal
-github.com/paketo-buildpacks/packit/postal/internal
-github.com/paketo-buildpacks/packit/scribe
-github.com/paketo-buildpacks/packit/servicebindings
-github.com/paketo-buildpacks/packit/vacation
 # github.com/paketo-buildpacks/packit/v2 v2.1.0
 ## explicit; go 1.16
+github.com/paketo-buildpacks/packit/v2
+github.com/paketo-buildpacks/packit/v2/cargo
 github.com/paketo-buildpacks/packit/v2/fs
+github.com/paketo-buildpacks/packit/v2/internal
+github.com/paketo-buildpacks/packit/v2/paketosbom
 github.com/paketo-buildpacks/packit/v2/pexec
+github.com/paketo-buildpacks/packit/v2/postal
+github.com/paketo-buildpacks/packit/v2/postal/internal
+github.com/paketo-buildpacks/packit/v2/scribe
+github.com/paketo-buildpacks/packit/v2/servicebindings
 github.com/paketo-buildpacks/packit/v2/vacation
 # github.com/pelletier/go-toml v1.9.4
 ## explicit; go 1.12
 github.com/pelletier/go-toml
-# github.com/pkg/errors v0.9.1
-## explicit
-github.com/pkg/errors
-# github.com/rivo/uniseg v0.2.0
-## explicit; go 1.12
-github.com/rivo/uniseg
 # github.com/sclevine/spec v1.4.0
 ## explicit; go 1.13
 github.com/sclevine/spec
@@ -131,29 +64,13 @@ github.com/ulikunitz/xz
 github.com/ulikunitz/xz/internal/hash
 github.com/ulikunitz/xz/internal/xlog
 github.com/ulikunitz/xz/lzma
-# github.com/xi2/xz v0.0.0-20171230120015-48954b6210f8
-## explicit
-github.com/xi2/xz
 # golang.org/x/net v0.0.0-20220325170049-de3da57026de
 ## explicit; go 1.17
-golang.org/x/net/context
-golang.org/x/net/context/ctxhttp
 golang.org/x/net/html
 golang.org/x/net/html/atom
 golang.org/x/net/html/charset
-# golang.org/x/oauth2 v0.0.0-20220309155454-6242fa91716a
-## explicit; go 1.11
-golang.org/x/oauth2
-golang.org/x/oauth2/authhandler
-golang.org/x/oauth2/google
-golang.org/x/oauth2/google/internal/externalaccount
-golang.org/x/oauth2/internal
-golang.org/x/oauth2/jws
-golang.org/x/oauth2/jwt
 # golang.org/x/sys v0.0.0-20220330033206-e17cdc41300f
 ## explicit; go 1.17
-golang.org/x/sys/internal/unsafeheader
-golang.org/x/sys/unix
 # golang.org/x/text v0.3.7
 ## explicit; go 1.17
 golang.org/x/text/encoding
@@ -173,47 +90,6 @@ golang.org/x/text/internal/utf8internal
 golang.org/x/text/language
 golang.org/x/text/runes
 golang.org/x/text/transform
-# google.golang.org/appengine v1.6.7
-## explicit; go 1.11
-google.golang.org/appengine
-google.golang.org/appengine/internal
-google.golang.org/appengine/internal/app_identity
-google.golang.org/appengine/internal/base
-google.golang.org/appengine/internal/datastore
-google.golang.org/appengine/internal/log
-google.golang.org/appengine/internal/modules
-google.golang.org/appengine/internal/remote_api
-google.golang.org/appengine/internal/urlfetch
-google.golang.org/appengine/urlfetch
-# google.golang.org/protobuf v1.28.0
-## explicit; go 1.11
-google.golang.org/protobuf/encoding/prototext
-google.golang.org/protobuf/encoding/protowire
-google.golang.org/protobuf/internal/descfmt
-google.golang.org/protobuf/internal/descopts
-google.golang.org/protobuf/internal/detrand
-google.golang.org/protobuf/internal/encoding/defval
-google.golang.org/protobuf/internal/encoding/messageset
-google.golang.org/protobuf/internal/encoding/tag
-google.golang.org/protobuf/internal/encoding/text
-google.golang.org/protobuf/internal/errors
-google.golang.org/protobuf/internal/filedesc
-google.golang.org/protobuf/internal/filetype
-google.golang.org/protobuf/internal/flags
-google.golang.org/protobuf/internal/genid
-google.golang.org/protobuf/internal/impl
-google.golang.org/protobuf/internal/order
-google.golang.org/protobuf/internal/pragma
-google.golang.org/protobuf/internal/set
-google.golang.org/protobuf/internal/strs
-google.golang.org/protobuf/internal/version
-google.golang.org/protobuf/proto
-google.golang.org/protobuf/reflect/protodesc
-google.golang.org/protobuf/reflect/protoreflect
-google.golang.org/protobuf/reflect/protoregistry
-google.golang.org/protobuf/runtime/protoiface
-google.golang.org/protobuf/runtime/protoimpl
-google.golang.org/protobuf/types/descriptorpb
 # gopkg.in/yaml.v2 v2.4.0
 ## explicit; go 1.15
 gopkg.in/yaml.v2
